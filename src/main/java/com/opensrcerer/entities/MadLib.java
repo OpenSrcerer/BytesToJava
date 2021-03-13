@@ -8,6 +8,10 @@ import java.util.Objects;
  * MadLibs endpoint.
  */
 public class MadLib {
+    public static void main(String[] args) {
+
+    }
+
     /**
      * The total number of variables in this MadLib.
      */

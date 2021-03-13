@@ -1,16 +1,23 @@
 package com.opensrcerer.util;
 
 public enum Endpoints {
+    WORD("/word/"),
+    TEXT("/text/"),
+    MADLIBS("/madlibs/"),
+    MEME("/meme/"),
+    LYRICS("/lyrics/"),
+    REDDIT("/reddit/");
 
-    WORD, TEXT, MADLIBS, MEME, LYRICS, REDDIT;
+    private final String endpointName;
 
-    private String name;
-
-    Endpoints() {
-
+    Endpoints(String endpointName) {
+        this.endpointName = endpointName;
     }
 
+    /**
+     * @return The String that matches the URL of an endpoint.
+     */
     public String getName() {
-        return name;
+        return endpointName;
     }
 }
