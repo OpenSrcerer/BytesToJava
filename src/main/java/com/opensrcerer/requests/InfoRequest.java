@@ -8,7 +8,6 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -105,7 +104,6 @@ public class InfoRequest implements BTJRequest<TokenInfo> {
     @Override
     public TokenInfo complete() throws RuntimeException {
         type = CompletionType.COMPLETE;
-        if (btj.)
         return null;
     }
 
@@ -119,7 +117,19 @@ public class InfoRequest implements BTJRequest<TokenInfo> {
         return request;
     }
 
-    @Nullable
+    @NotNull
+    @Override
+    public Consumer<TokenInfo> getSuccessConsumer() {
+        return success;
+    }
+
+    @NotNull
+    @Override
+    public Consumer<Throwable> getFailureConsumer() {
+        return failure;
+    }
+
+    @NotNull
     @Override
     public CompletableFuture<TokenInfo> getFuture() {
         return future;

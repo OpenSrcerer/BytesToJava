@@ -1,5 +1,6 @@
 package com.opensrcerer.requests;
 
+import com.opensrcerer.requestEntities.BTJReturnable;
 import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
 import okhttp3.Callback;
@@ -11,10 +12,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
- * @param <X> Return type of request.
+ * @param <X> Type of return value that this request has.
  * The main interface that is implemented by all BTJ Requests.
  */
-public interface BTJRequest<X> extends Callback {
+public interface BTJRequest<X extends BTJReturnable> extends Callback {
 
     // ***************************************************************
     // **                      ASYNCHRONOUS                         **
@@ -29,7 +30,7 @@ public interface BTJRequest<X> extends Callback {
     /**
      * Complete a request asynchronously using a callback.
      * @param success Callback consumer that handles the return value.
-     * @param failure Callback consumer that handles Throwables.
+     * @param failure Callback consumer that handles Throwable-s.
      */
     void queue(Consumer<X> success, Consumer<Throwable> failure);
 
@@ -48,7 +49,8 @@ public interface BTJRequest<X> extends Callback {
      * @return The completed request.
      * @throws RuntimeException with a descriptive message of what went wrong.
      */
-    @Nullable X complete();
+    @Nullable
+    Object complete();
 
     // ***************************************************************
     // **                        GETTERS                            **
@@ -60,9 +62,19 @@ public interface BTJRequest<X> extends Callback {
     @NotNull Request getRequest();
 
     /**
-     * @return The Future to this request if it
+     * @return The success consumer for this request.
      */
-    @Nullable CompletableFuture<X> getFuture();
+    @NotNull Consumer<X> getSuccessConsumer();
+
+    /**
+     * @return The failure consumer for this request.
+     */
+    @NotNull Consumer<Throwable> getFailureConsumer();
+
+    /**
+     * @return The Future to this request if it has been executed using submit().
+     */
+    @NotNull CompletableFuture<X> getFuture();
 
     /**
      * @return The type of Endpoint this Request refers to.

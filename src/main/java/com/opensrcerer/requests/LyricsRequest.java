@@ -98,7 +98,9 @@ public class LyricsRequest implements BTJRequest<SongLyrics> {
     @NotNull
     @Override
     public CompletableFuture<SongLyrics> submit() {
-        return null;
+        type = CompletionType.SUBMIT;
+        this.future = new CompletableFuture<>();
+        return this.future;
     }
 
     @Override
@@ -118,6 +120,18 @@ public class LyricsRequest implements BTJRequest<SongLyrics> {
 
     @NotNull
     @Override
+    public Consumer<SongLyrics> getSuccessConsumer() {
+        return success;
+    }
+
+    @NotNull
+    @Override
+    public Consumer<Throwable> getFailureConsumer() {
+        return failure;
+    }
+
+    @NotNull
+    @Override
     public Endpoint getEndpoint() {
         return Endpoint.LYRICS;
     }
@@ -128,7 +142,7 @@ public class LyricsRequest implements BTJRequest<SongLyrics> {
         return type;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public CompletableFuture<SongLyrics> getFuture() {
         return future;

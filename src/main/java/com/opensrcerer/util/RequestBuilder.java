@@ -1,5 +1,6 @@
 package com.opensrcerer.util;
 
+import com.opensrcerer.requestEntities.BTJReturnable;
 import com.opensrcerer.requestEntities.TokenInfo;
 import com.opensrcerer.requests.BTJRequest;
 import com.opensrcerer.requests.LyricsRequest;
@@ -24,7 +25,7 @@ public final class RequestBuilder {
      * @param request Endpoint to bind new HTTP Request to.
      * @return A new authorized Request bound to a specific endpoint.
      */
-    public Request createHttpRequest(BTJRequest<?> request) {
+    public Request createHttpRequest(BTJRequest<BTJReturnable> request) {
         Objects.requireNonNull(request);
         return new Request.Builder()
                 .header("Authorization", tokenInfo.getToken())
@@ -43,21 +44,25 @@ public final class RequestBuilder {
             throw new IllegalArgumentException();
         }
 
-        HttpUrl httpUrl = url.newBuilder().build();
+        HttpUrl.Builder urlBuilder = url.newBuilder();
 
-        if (request instanceof LyricsRequest) {
+        // Add query parameters for the endpoints that require them
+        if (request.getEndpoint().equals(Endpoint.LYRICS)) {
             String song = ((LyricsRequest) request).getSongName();
             @Nullable String artist = ((LyricsRequest) request).getArtist();
 
-            if (artist == null) {
-
+            urlBuilder.addQueryParameter("song", song);
+            if (artist != null) {
+                urlBuilder.addQueryParameter("artist", artist);
             }
 
-        } else if (request instanceof RedditPostsRequest) {
+        } else if (request.getEndpoint().equals(Endpoint.REDDIT)) {
             String subreddit = ((RedditPostsRequest) request).getSubreddit();
-            int posts = ((RedditPostsRequest) request).getNumber();
+            int posts = ((RedditPostsRequest) request).getLimit();
+            urlBuilder.addQueryParameter("subreddit", subreddit);
+            urlBuilder.addQueryParameter("limit", String.valueOf(posts));
         }
 
-        return url.newBuilder().build();
+        return urlBuilder.build();
     }
 }

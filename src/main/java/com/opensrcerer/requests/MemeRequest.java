@@ -8,7 +8,6 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -82,7 +81,9 @@ public class MemeRequest implements BTJRequest<RedditMeme> {
     @NotNull
     @Override
     public CompletableFuture<RedditMeme> submit() {
-        return null;
+        type = CompletionType.SUBMIT;
+        this.future = new CompletableFuture<>();
+        return this.future;
     }
 
     @Override
@@ -102,6 +103,18 @@ public class MemeRequest implements BTJRequest<RedditMeme> {
 
     @NotNull
     @Override
+    public Consumer<RedditMeme> getSuccessConsumer() {
+        return success;
+    }
+
+    @NotNull
+    @Override
+    public Consumer<Throwable> getFailureConsumer() {
+        return failure;
+    }
+
+    @NotNull
+    @Override
     public Endpoint getEndpoint() {
         return Endpoint.MEME;
     }
@@ -112,7 +125,7 @@ public class MemeRequest implements BTJRequest<RedditMeme> {
         return type;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public CompletableFuture<RedditMeme> getFuture() {
         return future;

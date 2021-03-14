@@ -1,6 +1,6 @@
 package com.opensrcerer.requestEntities;
 
-public class TokenInfo {
+public class TokenInfo implements BTJReturnable {
 
     /**
      * The token that is used in a BTB instance to access the API.

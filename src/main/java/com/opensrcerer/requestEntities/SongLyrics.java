@@ -4,7 +4,7 @@ package com.opensrcerer.requestEntities;
  * Class that encapsulates the data received from JSON requests on the
  * SongLyrics endpoint.
  */
-public class SongLyrics {
+public class SongLyrics implements BTJReturnable {
     /**
      * This Song's title.
      */

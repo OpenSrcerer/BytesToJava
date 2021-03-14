@@ -8,7 +8,6 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -82,7 +81,9 @@ public class MadLibRequest implements BTJRequest<MadLib> {
     @NotNull
     @Override
     public CompletableFuture<MadLib> submit() {
-        return null;
+        type = CompletionType.SUBMIT;
+        this.future = new CompletableFuture<>();
+        return this.future;
     }
 
     @Override
@@ -102,6 +103,18 @@ public class MadLibRequest implements BTJRequest<MadLib> {
 
     @NotNull
     @Override
+    public Consumer<MadLib> getSuccessConsumer() {
+        return success;
+    }
+
+    @NotNull
+    @Override
+    public Consumer<Throwable> getFailureConsumer() {
+        return failure;
+    }
+
+    @NotNull
+    @Override
     public Endpoint getEndpoint() {
         return Endpoint.MADLIBS;
     }
@@ -112,7 +125,7 @@ public class MadLibRequest implements BTJRequest<MadLib> {
         return type;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public CompletableFuture<MadLib> getFuture() {
         return future;

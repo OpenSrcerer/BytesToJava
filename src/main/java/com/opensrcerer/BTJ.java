@@ -1,9 +1,5 @@
 package com.opensrcerer;
 
-import com.opensrcerer.requestEntities.MadLib;
-import com.opensrcerer.requestEntities.RedditMeme;
-import com.opensrcerer.requestEntities.RedditPost;
-import com.opensrcerer.requestEntities.SongLyrics;
 import com.opensrcerer.requests.BTJRequest;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -49,17 +45,25 @@ public interface BTJ {
      * Add a Request to the request queue.
      * @param request BTJRequest to insert into the queue.
      */
-    void putIntoQueue(BTJRequest<?> request);
+    void putIntoQueue(BTJRequest request);
 
     /**
      * Create a new OkHttp request from a BTJRequest.
-     * @param request BTJRequest to insert into the queue.
+     * @param request BTJRequest to use for creation.
      */
     @NotNull
-    Request getRequest(final BTJRequest<?> request);
+    Request getRequest(final BTJRequest request);
 
+    /**
+     * @return Return the OkHttpClient of this BTJ instance.
+     */
     @NotNull
     OkHttpClient getClient();
+
+    /**
+     * @return True if the BTJ instance is currently falling back, false otherwise.
+     */
+    boolean isFallback();
 
     /**
      * Shuts down this instance of BTJ.
@@ -81,7 +85,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest<String> getWord();
+    BTJRequest getWord();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random piece of text from the
@@ -89,7 +93,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest<String> getText();
+    BTJRequest getText();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random MadLib from the
@@ -97,7 +101,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest<MadLib> getMadLib();
+    BTJRequest getMadLib();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random Meme from the
@@ -105,7 +109,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest<RedditMeme> getMeme();
+    BTJRequest getMeme();
 
     /**
      * @param song The name of the song to look for.
@@ -115,7 +119,7 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null -> fail")
-    BTJRequest<SongLyrics> getLyrics(String song);
+    BTJRequest getLyrics(String song);
 
     /**
      * @param song The name of the song to look for.
@@ -126,7 +130,7 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest<SongLyrics> getLyrics(String song, String artist);
+    BTJRequest getLyrics(String song, String artist);
 
     /**
      * @param subreddit Subreddit to retrieve from.
@@ -136,7 +140,7 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null -> fail")
-    BTJRequest<List<RedditPost>> getRedditPost(String subreddit);
+    BTJRequest getRedditPost(String subreddit);
 
     /**
      * @param subreddit Subreddit to retrieve from.
@@ -147,5 +151,5 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest<List<RedditPost>> getRedditPost(String subreddit, int limit);
+    BTJRequest getRedditPost(String subreddit, int limit);
 }

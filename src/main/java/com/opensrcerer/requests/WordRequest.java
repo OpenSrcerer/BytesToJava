@@ -1,19 +1,19 @@
 package com.opensrcerer.requests;
 
 import com.opensrcerer.BTJ;
+import com.opensrcerer.requestEntities.RandomWord;
 import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class WordRequest implements StringRequest {
+public class WordRequest implements BTJRequest<RandomWord> {
 
     /**
      * The BTJ instance for this Request.
@@ -28,7 +28,7 @@ public class WordRequest implements StringRequest {
     /**
      * Consumer to handle successful callbacks.
      */
-    private Consumer<String> success;
+    private Consumer<RandomWord> success;
 
     /**
      * Consumer to handle failed callbacks.
@@ -38,7 +38,7 @@ public class WordRequest implements StringRequest {
     /**
      * CompletableFuture in case of usage of .submit();
      */
-    private CompletableFuture<String> future;
+    private CompletableFuture<RandomWord> future;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
@@ -69,23 +69,25 @@ public class WordRequest implements StringRequest {
     // ***************************************************************
 
     @Override
-    public void queue(Consumer<String> success) {
+    public void queue(Consumer<RandomWord> success) {
 
     }
 
     @Override
-    public void queue(Consumer<String> success, Consumer<Throwable> failure) {
+    public void queue(Consumer<RandomWord> success, Consumer<Throwable> failure) {
 
     }
 
     @NotNull
     @Override
-    public CompletableFuture<String> submit() {
-        return null;
+    public CompletableFuture<RandomWord> submit() {
+        type = CompletionType.SUBMIT;
+        this.future = new CompletableFuture<>();
+        return this.future;
     }
 
     @Override
-    public String complete() {
+    public RandomWord complete() {
         return null;
     }
 
@@ -101,6 +103,18 @@ public class WordRequest implements StringRequest {
 
     @NotNull
     @Override
+    public Consumer<RandomWord> getSuccessConsumer() {
+        return success;
+    }
+
+    @NotNull
+    @Override
+    public Consumer<Throwable> getFailureConsumer() {
+        return failure;
+    }
+
+    @NotNull
+    @Override
     public Endpoint getEndpoint() {
         return Endpoint.WORD;
     }
@@ -111,9 +125,9 @@ public class WordRequest implements StringRequest {
         return type;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public CompletableFuture<String> getFuture() {
+    public CompletableFuture<RandomWord> getFuture() {
         return future;
     }
 }

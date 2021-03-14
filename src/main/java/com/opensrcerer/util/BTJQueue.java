@@ -1,7 +1,8 @@
 package com.opensrcerer.util;
 
 import com.opensrcerer.BTJ;
-import com.opensrcerer.requests.BTJRequest;
+import com.opensrcerer.requestEntities.BTJReturnable;
+import com.opensrcerer.requests.*;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public final class BTJQueue {
     /**
      * Queue for BTJRequests.
      */
-    private final LinkedBlockingQueue<BTJRequest<?>> requests = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<BTJRequest<BTJReturnable>> requests = new LinkedBlockingQueue<>();
 
     /**
      * Boolean condition that signifies whether the queue is currently falling back until next reset to prevent ratelimiting.
@@ -41,22 +42,25 @@ public final class BTJQueue {
         this.executor = executor;
 
         // Runnable to execute while spinning
-        Runnable drainCommands = () -> {
+        Runnable drainQueue = () -> {
             while (true) {
                 if (Thread.interrupted() || executor.isShutdown()) {
                     return;
                 }
 
-                final BTJRequest<?> request;
+                final BTJRequest<BTJReturnable> request;
                 try {
                     request = requests.take(); // Take a request from the request queue
 
                     // Identify Request completion type and init
                     switch (request.getCompletion()) {
                         case SUBMIT -> {
-                            Response response = btj.getClient().newCall(request.getRequest()).execute();
-                            // parse response
-                            request.getFuture().complete();
+                            try {
+                                Response response = btj.getClient().newCall(request.getRequest()).execute();
+                                JSONParser.matchRequest(request, response);
+                            } catch (Exception ex) {
+                                request.getFuture().completeExceptionally(ex);
+                            }
                         }
                         case QUEUE -> btj.getClient().newCall(request.getRequest()).enqueue(request);
                     }
@@ -72,15 +76,22 @@ public final class BTJQueue {
         };
 
         // Submit twice for two threads
-        this.executor.submit(drainCommands);
-        this.executor.submit(drainCommands);
+        this.executor.submit(drainQueue);
+        this.executor.submit(drainQueue);
+    }
+
+    /**
+     * @return The ExecutorService of this queue.
+     */
+    public ExecutorService getExecutor() {
+        return executor;
     }
 
     /**
      * Add a Request to the request queue.
      * @param request BTJRequest to insert into the queue.
      */
-    public void addRequest(BTJRequest<?> request) {
+    public void addRequest(BTJRequest<BTJReturnable> request) {
         try {
             requests.put(request);
         } catch (InterruptedException ex) {

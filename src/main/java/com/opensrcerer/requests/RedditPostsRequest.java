@@ -2,20 +2,20 @@ package com.opensrcerer.requests;
 
 import com.opensrcerer.BTJ;
 import com.opensrcerer.requestEntities.RedditPost;
+import com.opensrcerer.requestEntities.RedditPosts;
 import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
+public class RedditPostsRequest implements BTJRequest<RedditPosts> {
 
     /**
      * The BTJ instance for this Request.
@@ -30,7 +30,7 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
     /**
      * Consumer to handle successful callbacks.
      */
-    private Consumer<RedditPost> success;
+    private Consumer<RedditPosts> success;
 
     /**
      * Consumer to handle failed callbacks.
@@ -40,7 +40,7 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
     /**
      * CompletableFuture in case of usage of .submit();
      */
-    private CompletableFuture<List<RedditPost>> future;
+    private CompletableFuture<RedditPosts> future;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
@@ -55,13 +55,13 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
     /**
      * Number of posts to fetch.
      */
-    private final int number;
+    private final int limit;
 
-    public RedditPostsRequest(BTJ btj, String subreddit, int number) {
+    public RedditPostsRequest(BTJ btj, String subreddit, int limit) {
         this.btj = btj;
         this.request = btj.getRequest(this);
         this.subreddit = subreddit;
-        this.number = number;
+        this.limit = limit;
     }
 
     // ***************************************************************
@@ -83,19 +83,21 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
     // ***************************************************************
 
     @Override
-    public void queue(Consumer<List<RedditPost>> success) {
+    public void queue(Consumer<RedditPosts> success) {
 
     }
 
     @Override
-    public void queue(Consumer<List<RedditPost>> success, Consumer<Throwable> failure) {
+    public void queue(Consumer<RedditPosts> success, Consumer<Throwable> failure) {
 
     }
 
     @NotNull
     @Override
-    public CompletableFuture<List<RedditPost>> submit() {
-        return null;
+    public CompletableFuture<RedditPosts> submit() {
+        type = CompletionType.SUBMIT;
+        this.future = new CompletableFuture<>();
+        return this.future;
     }
 
     @Override
@@ -115,6 +117,18 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
 
     @NotNull
     @Override
+    public Consumer<RedditPosts> getSuccessConsumer() {
+        return success;
+    }
+
+    @NotNull
+    @Override
+    public Consumer<Throwable> getFailureConsumer() {
+        return failure;
+    }
+
+    @NotNull
+    @Override
     public Endpoint getEndpoint() {
         return Endpoint.REDDIT;
     }
@@ -125,9 +139,9 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
         return type;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public CompletableFuture<List<RedditPost>> getFuture() {
+    public CompletableFuture<RedditPosts> getFuture() {
         return future;
     }
 
@@ -141,7 +155,7 @@ public class RedditPostsRequest implements BTJRequest<List<RedditPost>> {
     /**
      * @return The number of RedditPost-s that will be fetched by this request.
      */
-    public int getNumber() {
-        return number;
+    public int getLimit() {
+        return limit;
     }
 }

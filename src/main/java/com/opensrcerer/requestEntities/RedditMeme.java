@@ -4,7 +4,7 @@ package com.opensrcerer.requestEntities;
  * Class that encapsulates the data received from JSON requests on the
  * Meme endpoint.
  */
-public class RedditMeme {
+public class RedditMeme implements BTJReturnable {
 
     /**
      * The title of this Meme.

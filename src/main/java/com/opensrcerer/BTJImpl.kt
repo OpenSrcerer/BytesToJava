@@ -15,7 +15,7 @@ import kotlin.jvm.Throws
 /**
  * The implementation class for the BytesToJava API wrapper.
  */
-class BTJImpl : BTJ {
+open class BTJImpl : BTJ {
 
     /**
      * Queue for all requests.
@@ -83,11 +83,11 @@ class BTJImpl : BTJ {
 
     // -----------------------------------------------
 
-    override fun putIntoQueue(request: BTJRequest<*>) {
+    override fun putIntoQueue(request: BTJRequest<BTJReturnable>) {
         requests.addRequest(request)
     }
 
-    override fun getRequest(request: BTJRequest<*>): Request {
+    override fun getRequest(request: BTJRequest<BTJReturnable>): Request {
         return builder.createHttpRequest(request)
     }
 
@@ -95,13 +95,17 @@ class BTJImpl : BTJ {
         return client
     }
 
+    override fun isFallback(): Boolean {
+        return requests.isFallback
+    }
+
     // -----------------------------------------------
 
-    override fun getWord(): BTJRequest<String> {
+    override fun getWord(): BTJRequest<RandomWord> {
         return WordRequest(this)
     }
 
-    override fun getText(): BTJRequest<String> {
+    override fun getText(): BTJRequest<RandomText> {
         return TextRequest(this)
     }
 
@@ -121,12 +125,12 @@ class BTJImpl : BTJ {
         return LyricsRequest(this, song, artist)
     }
 
-    override fun getRedditPost(subreddit: String): BTJRequest<List<RedditPost>> {
+    override fun getRedditPost(subreddit: String): BTJRequest<RedditPosts> {
         return RedditPostsRequest(this, subreddit, 1)
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun getRedditPost(subreddit: String, limit: Int): BTJRequest<List<RedditPost>> {
+    override fun getRedditPost(subreddit: String, limit: Int): BTJRequest<RedditPosts> {
         if (limit < 1 || limit > 50) {
             throw IllegalArgumentException("Number of reddit posts to fetch must be between 1 and 50.")
         }

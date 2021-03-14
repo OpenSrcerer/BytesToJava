@@ -7,7 +7,7 @@ import java.util.Objects;
  * Class that encapsulates the data received from JSON requests on the
  * MadLibs endpoint.
  */
-public class MadLib {
+public class MadLib implements BTJReturnable {
     /**
      * The total number of variables in this MadLib.
      */
