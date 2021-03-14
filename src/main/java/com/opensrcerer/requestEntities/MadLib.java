@@ -1,4 +1,4 @@
-package com.opensrcerer.entities;
+package com.opensrcerer.requestEntities;
 
 import java.util.List;
 import java.util.Objects;
@@ -8,10 +8,6 @@ import java.util.Objects;
  * MadLibs endpoint.
  */
 public class MadLib {
-    public static void main(String[] args) {
-
-    }
-
     /**
      * The total number of variables in this MadLib.
      */

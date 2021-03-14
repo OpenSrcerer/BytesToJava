@@ -1,4 +1,4 @@
-package com.opensrcerer.entities;
+package com.opensrcerer.requestEntities;
 
 /**
  * Class that encapsulates the data received from JSON requests on the

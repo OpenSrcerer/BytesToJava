@@ -1,5 +1,5 @@
-package com.opensrcerer.util;
+package com.opensrcerer.util
 
-public class Constants {
-    private static final String API_URL = "https://api.bytestobits.dev";
+object Constants {
+    const val API_URL = "https://api.bytestobits.dev"
 }

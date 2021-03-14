@@ -1,37 +1,61 @@
 package com.opensrcerer
 
-import com.opensrcerer.entities.MadLib
-import com.opensrcerer.entities.RedditMeme
-import com.opensrcerer.entities.RedditPost
-import com.opensrcerer.entities.SongLyrics
-import com.opensrcerer.requests.BTJRequest
+import com.opensrcerer.requestEntities.*
+import com.opensrcerer.requests.*
+import com.opensrcerer.util.BTJQueue
+import com.opensrcerer.util.Endpoint
 import com.opensrcerer.util.RequestBuilder
 import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.jetbrains.annotations.Contract
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadFactory
+import kotlin.jvm.Throws
 
 /**
  * The implementation class for the BytesToJava API wrapper.
  */
 class BTJImpl : BTJ {
+
+    /**
+     * Queue for all requests.
+     */
+    private val requests: BTJQueue
+
+    /**
+     * Request builder for all OkHttp requests associated with this BTJ instance.
+     */
     private val builder: RequestBuilder
+
+    /**
+     * Client that handles Requests for this BTJ instance.
+     */
     private val client: OkHttpClient
 
-    constructor(token: String) {
+    /**
+     * @param token API token for this BTJ instance.
+     * @return Get a BTJ instance with default settings.
+     */
+    protected constructor(token: String) {
+        requests = BTJQueue(defaultExecutor)
         builder = RequestBuilder(token) // Create a new RequestBuilder with given token
-        client = OkHttpClient().newBuilder()
-                .dispatcher(Dispatcher(defaultExecutor))
-                .build()
+        client = OkHttpClient().newBuilder().build()
     }
 
-    constructor(token: String, executor: ExecutorService) {
+    /**
+     * @param token API token for this BTJ instance.
+     * @param executor ExecutorService to supply.
+     * @return Get a BTJ instance that executes requests on the provided ExecutorService.
+     *         Only use this if you know what you're doing: ExecutorService provided will be
+     *         BLOCKED as it is used to drain a LinkedBlockingQueue.
+     */
+    protected constructor(token: String, executor: ExecutorService) {
+        requests = BTJQueue(executor)
         builder = RequestBuilder(token) // Create a new RequestBuilder with given token
-        client = OkHttpClient().newBuilder()
-                .dispatcher(Dispatcher(executor))
-                .build()
+        client = OkHttpClient().newBuilder().build()
     }
 
     /**
@@ -44,7 +68,7 @@ class BTJImpl : BTJ {
     /**
      * @return The default ScheduledExecutorService using a named ThreadFactory.
      */
-    companion object {
+    private companion object {
         private val defaultExecutor: ExecutorService
             get() {
                 val nonScheduledFactory: ThreadFactory = object : ThreadFactory {
@@ -59,31 +83,44 @@ class BTJImpl : BTJ {
             }
     }
 
+    // -----------------------------------------------
+
+    @Throws(InterruptedException::class)
+    override fun putIntoQueue(request: BTJRequest<*>) {
+        requests.put(request)
+    }
+
     override fun getClient(): OkHttpClient {
         return client
     }
 
+    override fun getRequest(endpoint: Endpoint): Request {
+        return builder.createRequest(endpoint)
+    }
+
+    // -----------------------------------------------
+
     override fun getWord(): BTJRequest<String> {
-        TODO("Not yet implemented")
+        return WordRequest(this, this.builder.createRequest(Endpoint.WORD))
     }
 
     override fun getText(): BTJRequest<String> {
-        TODO("Not yet implemented")
+        return TextRequest(this, this.builder.createRequest(Endpoint.TEXT))
     }
 
     override fun getMadLib(): BTJRequest<MadLib> {
-        TODO("Not yet implemented")
+        return MadLibRequest(this, this.builder.createRequest(Endpoint.MADLIBS))
     }
 
     override fun getMeme(): BTJRequest<RedditMeme> {
-        TODO("Not yet implemented")
+        return MemeRequest(this, this.builder.createRequest(Endpoint.MEME))
     }
 
-    override fun getLyrics(song: String?, artist: String?): BTJRequest<SongLyrics> {
-        TODO("Not yet implemented")
+    override fun getLyrics(song: String, artist: String): BTJRequest<SongLyrics> {
+        return LyricsRequest(this, this.builder.createRequest(Endpoint.LYRICS))
     }
 
-    override fun getRedditPost(subreddit: String?, limit: Int): BTJRequest<MutableList<RedditPost>> {
-        TODO("Not yet implemented")
+    override fun getRedditPost(subreddit: String, limit: Int): BTJRequest<List<RedditPost>> {
+        return RedditPostRequest(this, this.builder.createRequest(Endpoint.REDDIT))
     }
 }

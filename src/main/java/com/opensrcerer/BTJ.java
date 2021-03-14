@@ -1,11 +1,13 @@
 package com.opensrcerer;
 
-import com.opensrcerer.entities.MadLib;
-import com.opensrcerer.entities.RedditMeme;
-import com.opensrcerer.entities.RedditPost;
-import com.opensrcerer.entities.SongLyrics;
+import com.opensrcerer.requestEntities.MadLib;
+import com.opensrcerer.requestEntities.RedditMeme;
+import com.opensrcerer.requestEntities.RedditPost;
+import com.opensrcerer.requestEntities.SongLyrics;
 import com.opensrcerer.requests.BTJRequest;
+import com.opensrcerer.util.Endpoint;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,22 +32,27 @@ public interface BTJ {
 
     /**
      * @param token API token for this BTJ instance.
-     * @param service ExecutorService to supply.
+     * @param executor ExecutorService to supply.
      * @return Get a BTJ instance that executes requests on the provided ExecutorService.
      *         Only use this if you know what you're doing.
      */
-    static BTJImpl getBTJ(String token, ExecutorService service) {
+    static BTJImpl getBTJ(String token, ExecutorService executor) {
         Objects.requireNonNull(token);
-        Objects.requireNonNull(service);
-        return new BTJImpl(token, service);
+        Objects.requireNonNull(executor);
+        return new BTJImpl(token, executor);
     }
 
     // ***************************************************************
     // **                       INTERNAL                            **
     // ***************************************************************
 
+    void putIntoQueue(BTJRequest<?> request);
+
     @NotNull
     OkHttpClient getClient();
+
+    @NotNull
+    Request getRequest(final Endpoint endpoint);
 
     // ***************************************************************
     // **                      RETRIEVALS                           **
