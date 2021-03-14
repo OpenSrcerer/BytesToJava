@@ -3,6 +3,9 @@ package com.opensrcerer.requests;
 import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
 import okhttp3.Callback;
+import okhttp3.Request;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -34,7 +37,7 @@ public interface BTJRequest<X> extends Callback {
      * Complete a request asynchronously.
      * @return A CompletableFuture that encapsulates the requested data.
      */
-    CompletableFuture<X> submit();
+    @NotNull CompletableFuture<X> submit();
 
     // ***************************************************************
     // **                       SYNCHRONOUS                         **
@@ -45,19 +48,29 @@ public interface BTJRequest<X> extends Callback {
      * @return The completed request.
      * @throws RuntimeException with a descriptive message of what went wrong.
      */
-    X complete();
+    @Nullable X complete();
 
     // ***************************************************************
-    // **                          OTHER                            **
+    // **                        GETTERS                            **
     // ***************************************************************
+
+    /**
+     * @return The OkHttp Request of this BTJRequest.
+     */
+    @NotNull Request getRequest();
+
+    /**
+     * @return The Future to this request if it
+     */
+    @Nullable CompletableFuture<X> getFuture();
 
     /**
      * @return The type of Endpoint this Request refers to.
      */
-    Endpoint getEndpoint();
+    @NotNull Endpoint getEndpoint();
 
     /**
      * @return The way this Request should be asynchronously completed (if at all).
      */
-    CompletionType getCompletion();
+    @NotNull CompletionType getCompletion();
 }

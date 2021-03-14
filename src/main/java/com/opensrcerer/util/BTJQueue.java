@@ -1,6 +1,8 @@
 package com.opensrcerer.util;
 
+import com.opensrcerer.BTJ;
 import com.opensrcerer.requests.BTJRequest;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,11 @@ public final class BTJQueue {
     private final Logger lgr = LoggerFactory.getLogger(BTJQueue.class);
 
     /**
+     * BTJ instance for this Queue.
+     */
+    private final BTJ btj;
+
+    /**
      * Pool of threads to drain requests queue.
      */
     private final ExecutorService executor;
@@ -24,23 +31,36 @@ public final class BTJQueue {
      */
     private final LinkedBlockingQueue<BTJRequest<?>> requests = new LinkedBlockingQueue<>();
 
-    public BTJQueue(ExecutorService executor) {
+    /**
+     * Boolean condition that signifies whether the queue is currently falling back until next reset to prevent ratelimiting.
+     */
+    private boolean fallback = false;
+
+    public BTJQueue(BTJ btj, ExecutorService executor) {
+        this.btj = btj;
         this.executor = executor;
 
+        // Runnable to execute while spinning
         Runnable drainCommands = () -> {
             while (true) {
-                if (Thread.interrupted()) {
+                if (Thread.interrupted() || executor.isShutdown()) {
                     return;
                 }
 
-                BTJRequest<?> requestToProcess;
+                final BTJRequest<?> request;
                 try {
-                    requestToProcess = requests.take(); // Take a request from the request queue
+                    request = requests.take(); // Take a request from the request queue
 
-                    // Identify Request type.
+                    // Identify Request completion type and init
+                    switch (request.getCompletion()) {
+                        case SUBMIT -> {
+                            Response response = btj.getClient().newCall(request.getRequest()).execute();
+                            // parse response
+                            request.getFuture().complete();
+                        }
+                        case QUEUE -> btj.getClient().newCall(request.getRequest()).enqueue(request);
+                    }
 
-
-                    requestToProcess.run(); // Run the command
                 } catch (Exception ex) {
                     // Other exceptions
                     lgr.error(Thread.currentThread().getName() + " encountered an exception:", ex);
@@ -52,11 +72,26 @@ public final class BTJQueue {
         };
 
         // Submit twice for two threads
-        executor.submit(drainCommands);
-        executor.submit(drainCommands);
+        this.executor.submit(drainCommands);
+        this.executor.submit(drainCommands);
     }
 
-    public void addRequest(BTJRequest<?> request) throws InterruptedException {
-        requests.put(request);
+    /**
+     * Add a Request to the request queue.
+     * @param request BTJRequest to insert into the queue.
+     */
+    public void addRequest(BTJRequest<?> request) {
+        try {
+            requests.put(request);
+        } catch (InterruptedException ex) {
+            lgr.warn("Request queue interrupted while waiting to insert Request!");
+        }
+    }
+
+    /**
+     * @return Whether the request queue is currently awaiting until next reset to request.
+     */
+    public boolean isFallback() {
+        return fallback;
     }
 }

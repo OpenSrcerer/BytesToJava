@@ -8,6 +8,7 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -38,16 +39,16 @@ public class InfoRequest implements BTJRequest<TokenInfo> {
     /**
      * CompletableFuture in case of usage of .submit();
      */
-    private CompletableFuture<TokenInfo> future;
+    private CompletableFuture<TokenInfo> future = null;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
      */
     private CompletionType type;
 
-    public InfoRequest(BTJ btj, Request request) {
+    public InfoRequest(BTJ btj) {
         this.btj = btj;
-        this.request = request;
+        this.request = btj.getRequest(this);
     }
 
     // ***************************************************************
@@ -76,7 +77,7 @@ public class InfoRequest implements BTJRequest<TokenInfo> {
             // use default consumer
         }
         this.success = success;
-        this.btj.getClient().newCall(btj.getRequest(getEndpoint())).enqueue(this);
+        this.btj.getClient().newCall(request).enqueue(this);
     }
 
     @Override
@@ -88,31 +89,51 @@ public class InfoRequest implements BTJRequest<TokenInfo> {
         if (failure == null) {
             // use default consumer
         }
-        this.btj.que
         this.success = success;
         this.failure = failure;
-        this.btj.getClient().newCall(btj.getRequest(getEndpoint())).enqueue(this);
+        this.btj.getClient().newCall(request).enqueue(this);
     }
 
+    @NotNull
     @Override
     public CompletableFuture<TokenInfo> submit() {
         type = CompletionType.SUBMIT;
-        return null;
+        this.future = new CompletableFuture<>();
+        return this.future;
     }
 
     @Override
     public TokenInfo complete() throws RuntimeException {
-        type = null;
+        type = CompletionType.COMPLETE;
+        if (btj.)
         return null;
     }
 
+    // ***************************************************************
+    // **                        GETTERS                            **
+    // ***************************************************************
+
+    @NotNull
+    @Override
+    public Request getRequest() {
+        return request;
+    }
+
+    @Nullable
+    @Override
+    public CompletableFuture<TokenInfo> getFuture() {
+        return future;
+    }
+
+    @NotNull
     @Override
     public Endpoint getEndpoint() {
         return Endpoint.INFO;
     }
 
+    @NotNull
     @Override
     public CompletionType getCompletion() {
-        return null;
+        return type;
     }
 }

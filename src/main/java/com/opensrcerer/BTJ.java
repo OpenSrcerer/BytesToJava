@@ -5,7 +5,6 @@ import com.opensrcerer.requestEntities.RedditMeme;
 import com.opensrcerer.requestEntities.RedditPost;
 import com.opensrcerer.requestEntities.SongLyrics;
 import com.opensrcerer.requests.BTJRequest;
-import com.opensrcerer.util.Endpoint;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.jetbrains.annotations.Contract;
@@ -46,13 +45,31 @@ public interface BTJ {
     // **                       INTERNAL                            **
     // ***************************************************************
 
+    /**
+     * Add a Request to the request queue.
+     * @param request BTJRequest to insert into the queue.
+     */
     void putIntoQueue(BTJRequest<?> request);
+
+    /**
+     * Create a new OkHttp request from a BTJRequest.
+     * @param request BTJRequest to insert into the queue.
+     */
+    @NotNull
+    Request getRequest(final BTJRequest<?> request);
 
     @NotNull
     OkHttpClient getClient();
 
-    @NotNull
-    Request getRequest(final Endpoint endpoint);
+    /**
+     * Shuts down this instance of BTJ.
+     */
+    void shutdown();
+
+    /**
+     * Shuts down this instance of BTJ immediately and returns a list of Runnable-s that were not completed.
+     */
+    List<Runnable> shutdownNow();
 
     // ***************************************************************
     // **                      RETRIEVALS                           **
@@ -92,14 +109,34 @@ public interface BTJ {
 
     /**
      * @param song The name of the song to look for.
+     * @return A BTJRequest that will be executed to retrieve lyrics for a Song from the
+     *         BytesToBits API.
+     *         Can be executed using .queue() or .complete().
+     */
+    @NotNull
+    @Contract("null -> fail")
+    BTJRequest<SongLyrics> getLyrics(String song);
+
+    /**
+     * @param song The name of the song to look for.
      * @param artist The artist that made this song.
      * @return A BTJRequest that will be executed to retrieve lyrics for a Song from the
      *         BytesToBits API.
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    @Contract("null, null -> fail; null, _ -> fail; _, null -> fail")
+    @Contract("null, _ -> fail")
     BTJRequest<SongLyrics> getLyrics(String song, String artist);
+
+    /**
+     * @param subreddit Subreddit to retrieve from.
+     * @return A BTJRequest that will be executed to retrieve a random word from the
+     *         BytesToBits API.
+     *         Can be executed using .queue() or .complete().
+     */
+    @NotNull
+    @Contract("null -> fail")
+    BTJRequest<List<RedditPost>> getRedditPost(String subreddit);
 
     /**
      * @param subreddit Subreddit to retrieve from.

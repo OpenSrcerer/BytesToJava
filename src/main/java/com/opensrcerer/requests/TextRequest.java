@@ -1,11 +1,13 @@
 package com.opensrcerer.requests;
 
 import com.opensrcerer.BTJ;
+import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -23,9 +25,29 @@ public class TextRequest implements StringRequest {
      */
     private final Request request;
 
-    public TextRequest(BTJ btj, Request request) {
+    /**
+     * Consumer to handle successful callbacks.
+     */
+    private Consumer<String> success;
+
+    /**
+     * Consumer to handle failed callbacks.
+     */
+    private Consumer<Throwable> failure;
+
+    /**
+     * CompletableFuture in case of usage of .submit();
+     */
+    private CompletableFuture<String> future;
+
+    /**
+     * The way this Request should be asynchronously executed (if at all).
+     */
+    private CompletionType type;
+
+    public TextRequest(BTJ btj) {
         this.btj = btj;
-        this.request = request;
+        this.request = btj.getRequest(this);
     }
 
     // ***************************************************************
@@ -56,6 +78,7 @@ public class TextRequest implements StringRequest {
 
     }
 
+    @NotNull
     @Override
     public CompletableFuture<String> submit() {
         return null;
@@ -66,8 +89,31 @@ public class TextRequest implements StringRequest {
         return null;
     }
 
+    // ***************************************************************
+    // **                        GETTERS                            **
+    // ***************************************************************
+
+    @NotNull
+    @Override
+    public Request getRequest() {
+        return request;
+    }
+
+    @NotNull
     @Override
     public Endpoint getEndpoint() {
         return Endpoint.TEXT;
+    }
+
+    @NotNull
+    @Override
+    public CompletionType getCompletion() {
+        return type;
+    }
+
+    @Nullable
+    @Override
+    public CompletableFuture<String> getFuture() {
+        return future;
     }
 }
