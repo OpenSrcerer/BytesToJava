@@ -7,15 +7,25 @@ import com.opensrcerer.util.RequestBuilder
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jetbrains.annotations.Contract
+import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
+import java.util.logging.Logger
+import javax.security.auth.login.LoginException
+import kotlin.collections.ArrayList
 import kotlin.jvm.Throws
 
 /**
  * The implementation class for the BytesToJava API wrapper.
  */
-open class BTJImpl : BTJ {
+class BTJImpl : BTJ {
+
+    /**
+     * Logger for this BTJ Instance.
+     */
+    private val lgr: org.slf4j.Logger = LoggerFactory.getLogger(BTJ::class.java)
 
     /**
      * Queue for all requests.
@@ -36,10 +46,14 @@ open class BTJImpl : BTJ {
      * @param token API token for this BTJ instance.
      * @return Get a BTJ instance with default settings.
      */
-    protected constructor(token: String) {
+    @Throws(LoginException::class)
+    constructor(token: String) {
+        lgr.debug("Constructing queue with default executor...")
         requests = BTJQueue(this, defaultExecutor)
-        builder = RequestBuilder(token) // Create a new RequestBuilder with given token
         client = OkHttpClient().newBuilder().build()
+        builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
+        builder.setTokenInfo()
+        lgr.debug("Finished init!")
     }
 
     /**
@@ -49,18 +63,32 @@ open class BTJImpl : BTJ {
      *         Only use this if you know what you're doing: ExecutorService provided will be
      *         BLOCKED as it is used to drain a LinkedBlockingQueue.
      */
-    protected constructor(token: String, executor: ExecutorService) {
+    @Throws(LoginException::class)
+    constructor(token: String, executor: ExecutorService) {
+        lgr.debug("Initializing BTJ instance...")
         requests = BTJQueue(this, executor)
-        builder = RequestBuilder(token) // Create a new RequestBuilder with given token
         client = OkHttpClient().newBuilder().build()
+        builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
+        lgr.debug("Finished init!")
     }
 
+    /**
+     * Shutdown BTJ instance when requests are done.
+     */
     override fun shutdown() {
         client.dispatcher.executorService.shutdown()
+        requests.executor.shutdown()
     }
 
+    /**
+     * Shutdown BTJ instance immediately, returning an immutable List of all unfinished Runnables.
+     * @return An Unmodifiable List of Runnables that were interrupted.
+     */
     override fun shutdownNow(): List<Runnable> {
-        return client.dispatcher.executorService.shutdownNow()
+        val runnableList: ArrayList<Runnable> = ArrayList()
+        runnableList.addAll(requests.executor.shutdownNow())
+        runnableList.addAll(client.dispatcher.executorService.shutdownNow())
+        return Collections.unmodifiableList(runnableList)
     }
 
     /**
@@ -83,11 +111,15 @@ open class BTJImpl : BTJ {
 
     // -----------------------------------------------
 
-    override fun putIntoQueue(request: BTJRequest<BTJReturnable>) {
+    override fun invoke(request: BTJRequest<out BTJReturnable>) {
         requests.addRequest(request)
     }
 
-    override fun getRequest(request: BTJRequest<BTJReturnable>): Request {
+    override fun getLogger(): org.slf4j.Logger {
+        return lgr
+    }
+
+    override fun getRequest(request: BTJRequest<out BTJReturnable>): Request {
         return builder.createHttpRequest(request)
     }
 
@@ -100,6 +132,10 @@ open class BTJImpl : BTJ {
     }
 
     // -----------------------------------------------
+
+    override fun getInfo(): BTJRequest<TokenInfo> {
+        return InfoRequest(this)
+    }
 
     override fun getWord(): BTJRequest<RandomWord> {
         return WordRequest(this)

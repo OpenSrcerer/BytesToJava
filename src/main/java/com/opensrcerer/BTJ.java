@@ -1,11 +1,14 @@
 package com.opensrcerer;
 
+import com.opensrcerer.requestEntities.*;
 import com.opensrcerer.requests.BTJRequest;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
+import javax.security.auth.login.LoginException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +23,7 @@ public interface BTJ {
      * @param token API token for this BTJ instance.
      * @return Get a BTJ instance with default settings.
      */
-    static BTJImpl getBTJ(String token) {
+    static BTJImpl getBTJ(String token) throws LoginException {
         Objects.requireNonNull(token);
         return new BTJImpl(token);
     }
@@ -31,7 +34,7 @@ public interface BTJ {
      * @return Get a BTJ instance that executes requests on the provided ExecutorService.
      *         Only use this if you know what you're doing.
      */
-    static BTJImpl getBTJ(String token, ExecutorService executor) {
+    static BTJImpl getBTJ(String token, ExecutorService executor) throws LoginException {
         Objects.requireNonNull(token);
         Objects.requireNonNull(executor);
         return new BTJImpl(token, executor);
@@ -45,14 +48,19 @@ public interface BTJ {
      * Add a Request to the request queue.
      * @param request BTJRequest to insert into the queue.
      */
-    void putIntoQueue(BTJRequest request);
+    void invoke(BTJRequest<? extends BTJReturnable> request);
+
+    /**
+     * @return Logger of the BTJ instance.
+     */
+    Logger getLogger();
 
     /**
      * Create a new OkHttp request from a BTJRequest.
      * @param request BTJRequest to use for creation.
      */
     @NotNull
-    Request getRequest(final BTJRequest request);
+    Request getRequest(final BTJRequest<? extends BTJReturnable> request);
 
     /**
      * @return Return the OkHttpClient of this BTJ instance.
@@ -80,12 +88,20 @@ public interface BTJ {
     // ***************************************************************
 
     /**
+     * @return A BTJRequest that will be executed to retrieve information
+     *         about your token from the BTB API.
+     *         Can be executed using .queue() or .complete().
+     */
+    @NotNull
+    BTJRequest<TokenInfo> getInfo();
+
+    /**
      * @return A BTJRequest that will be executed to retrieve a random word from the
      *         BytesToBits API.
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest getWord();
+    BTJRequest<RandomWord> getWord();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random piece of text from the
@@ -93,7 +109,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest getText();
+    BTJRequest<RandomText> getText();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random MadLib from the
@@ -101,7 +117,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest getMadLib();
+    BTJRequest<MadLib> getMadLib();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random Meme from the
@@ -109,7 +125,7 @@ public interface BTJ {
      *         Can be executed using .queue() or .complete().
      */
     @NotNull
-    BTJRequest getMeme();
+    BTJRequest<RedditMeme> getMeme();
 
     /**
      * @param song The name of the song to look for.
@@ -119,7 +135,7 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null -> fail")
-    BTJRequest getLyrics(String song);
+    BTJRequest<SongLyrics> getLyrics(String song);
 
     /**
      * @param song The name of the song to look for.
@@ -130,7 +146,7 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest getLyrics(String song, String artist);
+    BTJRequest<SongLyrics> getLyrics(String song, String artist);
 
     /**
      * @param subreddit Subreddit to retrieve from.
@@ -140,7 +156,7 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null -> fail")
-    BTJRequest getRedditPost(String subreddit);
+    BTJRequest<RedditPosts> getRedditPost(String subreddit);
 
     /**
      * @param subreddit Subreddit to retrieve from.
@@ -151,5 +167,5 @@ public interface BTJ {
      */
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest getRedditPost(String subreddit, int limit);
+    BTJRequest<RedditPosts> getRedditPost(String subreddit, int limit);
 }

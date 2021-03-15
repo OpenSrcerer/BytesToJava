@@ -1,5 +1,8 @@
 package com.opensrcerer.requestEntities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -7,7 +10,7 @@ import java.util.Objects;
  * Class that encapsulates the data received from JSON requests on the
  * MadLibs endpoint.
  */
-public class MadLib implements BTJReturnable {
+public final class MadLib implements BTJReturnable {
     /**
      * The total number of variables in this MadLib.
      */
@@ -32,8 +35,9 @@ public class MadLib implements BTJReturnable {
     /**
      * Constructs a new MadLib object with the required data.
      */
-    public MadLib(int questions, String title,
-                  String text, List<String> variables)
+    @JsonCreator
+    public MadLib(@JsonProperty("questions") int questions, @JsonProperty("title") String title,
+                  @JsonProperty("text") String text, @JsonProperty("variables") List<String> variables)
     {
         this.questions = questions;
         this.title = title;

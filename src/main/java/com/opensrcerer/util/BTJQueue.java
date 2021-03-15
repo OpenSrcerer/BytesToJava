@@ -2,20 +2,13 @@ package com.opensrcerer.util;
 
 import com.opensrcerer.BTJ;
 import com.opensrcerer.requestEntities.BTJReturnable;
-import com.opensrcerer.requests.*;
+import com.opensrcerer.requests.BTJRequest;
 import okhttp3.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public final class BTJQueue {
-
-    /**
-     * Logger for this queue.
-     */
-    private final Logger lgr = LoggerFactory.getLogger(BTJQueue.class);
 
     /**
      * BTJ instance for this Queue.
@@ -30,7 +23,7 @@ public final class BTJQueue {
     /**
      * Queue for BTJRequests.
      */
-    private final LinkedBlockingQueue<BTJRequest<BTJReturnable>> requests = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> requests = new LinkedBlockingQueue<>();
 
     /**
      * Boolean condition that signifies whether the queue is currently falling back until next reset to prevent ratelimiting.
@@ -48,29 +41,38 @@ public final class BTJQueue {
                     return;
                 }
 
-                final BTJRequest<BTJReturnable> request;
+                final BTJRequest<? extends BTJReturnable> request;
                 try {
                     request = requests.take(); // Take a request from the request queue
 
                     // Identify Request completion type and init
                     switch (request.getCompletion()) {
-                        case SUBMIT -> {
+                        case FUTURE -> {
                             try {
+                                // Await synchronous response on worker thread
                                 Response response = btj.getClient().newCall(request.getRequest()).execute();
-                                JSONParser.matchRequest(request, response);
+                                btj.getLogger().debug("Received response for Request of type " + CompletionType.FUTURE.name());
+                                JSONParser.matchAsynchronous(request, response);
                             } catch (Exception ex) {
-                                request.getFuture().completeExceptionally(ex);
+                                // Exception handling, complete future exceptionally
+                                btj.getLogger().debug("Received exception for Request of type " + CompletionType.FUTURE.name());
+                                request.getAsync().getFuture().completeExceptionally(ex);
                             }
                         }
-                        case QUEUE -> btj.getClient().newCall(request.getRequest()).enqueue(request);
+                        // Dispatch async call to the OkHttpClient dispatcher
+                        case CALLBACK -> {
+                            btj.getLogger().debug("Dispatching async call for future of type " + CompletionType.CALLBACK.name());
+                            btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
+                        }
                     }
 
                 } catch (Exception ex) {
                     // Other exceptions
-                    lgr.error(Thread.currentThread().getName() + " encountered an exception:", ex);
+                    btj.getLogger().error(Thread.currentThread().getName() + " encountered an exception:", ex);
                 } catch (Error err) {
-                    // Fatal Error, terminate program
-                    lgr.error("A fatal error was thrown. Details:", err);
+                    // Fatal Error, terminate instance
+                    btj.getLogger().error("A fatal error was thrown. BTJ instance terminating. Details:", err);
+                    btj.shutdownNow();
                 }
             }
         };
@@ -91,11 +93,11 @@ public final class BTJQueue {
      * Add a Request to the request queue.
      * @param request BTJRequest to insert into the queue.
      */
-    public void addRequest(BTJRequest<BTJReturnable> request) {
+    public void addRequest(BTJRequest<? extends BTJReturnable> request) {
         try {
             requests.put(request);
         } catch (InterruptedException ex) {
-            lgr.warn("Request queue interrupted while waiting to insert Request!");
+            btj.getLogger().warn("Request queue interrupted while waiting to insert Request!");
         }
     }
 

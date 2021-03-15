@@ -1,19 +1,18 @@
 package com.opensrcerer.requests;
 
 import com.opensrcerer.BTJ;
+import com.opensrcerer.consumers.BTJAsync;
 import com.opensrcerer.requestEntities.RandomWord;
 import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
-import okhttp3.Call;
+import com.opensrcerer.util.JSONParser;
 import okhttp3.Request;
-import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class WordRequest implements BTJRequest<RandomWord> {
+public final class WordRequest implements BTJRequest<RandomWord> {
 
     /**
      * The BTJ instance for this Request.
@@ -26,19 +25,9 @@ public class WordRequest implements BTJRequest<RandomWord> {
     private final Request request;
 
     /**
-     * Consumer to handle successful callbacks.
+     * Consumer to handle futures & callbacks.
      */
-    private Consumer<RandomWord> success;
-
-    /**
-     * Consumer to handle failed callbacks.
-     */
-    private Consumer<Throwable> failure;
-
-    /**
-     * CompletableFuture in case of usage of .submit();
-     */
-    private CompletableFuture<RandomWord> future;
+    private BTJAsync<RandomWord> async = null;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
@@ -51,44 +40,41 @@ public class WordRequest implements BTJRequest<RandomWord> {
     }
 
     // ***************************************************************
-    // **                       CALLBACK                            **
-    // ***************************************************************
-
-    @Override
-    public void onResponse(@NotNull Call call, @NotNull Response response) {
-
-    }
-
-    @Override
-    public void onFailure(@NotNull Call call, @NotNull IOException ex) {
-
-    }
-
-    // ***************************************************************
     // **                      COMPLETION                           **
     // ***************************************************************
 
     @Override
     public void queue(Consumer<RandomWord> success) {
-
+        type = CompletionType.CALLBACK;
+        async = new BTJAsync<>(this, success, null);
+        btj.invoke(this);
     }
 
     @Override
     public void queue(Consumer<RandomWord> success, Consumer<Throwable> failure) {
-
+        type = CompletionType.CALLBACK;
+        async = new BTJAsync<>(this, success, failure);
+        btj.invoke(this);
     }
 
     @NotNull
     @Override
     public CompletableFuture<RandomWord> submit() {
-        type = CompletionType.SUBMIT;
-        this.future = new CompletableFuture<>();
-        return this.future;
+        type = CompletionType.FUTURE;
+        async = new BTJAsync<>();
+        btj.invoke(this);
+        return this.async.getFuture();
     }
 
+    @NotNull
     @Override
     public RandomWord complete() {
-        return null;
+        type = CompletionType.SYNCHRONOUS;
+        try {
+            return JSONParser.matchSynchronous(this, btj.getClient().newCall(btj.getRequest(this)).execute());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     // ***************************************************************
@@ -103,15 +89,10 @@ public class WordRequest implements BTJRequest<RandomWord> {
 
     @NotNull
     @Override
-    public Consumer<RandomWord> getSuccessConsumer() {
-        return success;
+    public BTJAsync<RandomWord> getAsync() {
+        return async;
     }
 
-    @NotNull
-    @Override
-    public Consumer<Throwable> getFailureConsumer() {
-        return failure;
-    }
 
     @NotNull
     @Override
@@ -123,11 +104,5 @@ public class WordRequest implements BTJRequest<RandomWord> {
     @Override
     public CompletionType getCompletion() {
         return type;
-    }
-
-    @NotNull
-    @Override
-    public CompletableFuture<RandomWord> getFuture() {
-        return future;
     }
 }

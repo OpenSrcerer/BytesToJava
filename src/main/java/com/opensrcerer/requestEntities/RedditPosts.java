@@ -6,7 +6,7 @@ import java.util.Collection;
 /**
  * BTJReturnable ArrayList to encapsulate RedditPost-s. Immutable.
  */
-public class RedditPosts extends ArrayList<RedditPost> implements BTJReturnable {
+public final class RedditPosts extends ArrayList<RedditPost> implements BTJReturnable {
     public RedditPosts(Collection<? extends RedditPost> c) {
         super(c);
     }

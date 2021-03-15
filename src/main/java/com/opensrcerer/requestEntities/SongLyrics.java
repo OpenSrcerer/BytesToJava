@@ -1,10 +1,13 @@
 package com.opensrcerer.requestEntities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Class that encapsulates the data received from JSON requests on the
  * SongLyrics endpoint.
  */
-public class SongLyrics implements BTJReturnable {
+public final class SongLyrics implements BTJReturnable {
     /**
      * This Song's title.
      */
@@ -20,7 +23,9 @@ public class SongLyrics implements BTJReturnable {
      */
     private final String lyrics;
 
-    public SongLyrics(String title, String artist, String lyrics) {
+    @JsonCreator
+    public SongLyrics(@JsonProperty("title") String title, @JsonProperty("artist") String artist,
+                      @JsonProperty("lyrics") String lyrics) {
         this.title = title;
         this.artist = artist;
         this.lyrics = lyrics;

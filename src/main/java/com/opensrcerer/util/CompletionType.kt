@@ -1,5 +1,5 @@
 package com.opensrcerer.util
 
 enum class CompletionType {
-    QUEUE, SUBMIT, COMPLETE
+    CALLBACK, FUTURE, SYNCHRONOUS
 }

@@ -26,48 +26,53 @@ public class JSONParser {
      */
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    @SuppressWarnings("ConstantConditions")
-    public static void matchRequest(BTJRequest<BTJReturnable> request, Response response) {
+
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
+    public static <X extends BTJReturnable> X matchSynchronous(BTJRequest<X> request, Response response) throws Exception {
+        if (request.getCompletion() != CompletionType.SYNCHRONOUS) {
+            throw new IllegalArgumentException("Invalid Request type for call.");
+        }
+        final String JSONBody = response.body().string();
+        System.out.println(JSONBody);
+        for (Method m : JSONParser.class.getDeclaredMethods()) {
+            if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
+                return (X) m.invoke(null, JSONBody);
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value");
+    }
+
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
+    public static <X extends BTJReturnable> void matchAsynchronous(BTJRequest<X> request, Response response) {
+        if (request.getCompletion() == CompletionType.SYNCHRONOUS) {
+            throw new IllegalArgumentException("Invalid Request type for call.");
+        }
         try {
             final String JSONBody = response.body().string();
-
-            for (Method m : Endpoint.class.getDeclaredMethods()) {
+            System.out.println(JSONBody);
+            for (Method m : JSONParser.class.getDeclaredMethods()) {
                 if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
-                    Object returned = m.invoke(null, response);
-
+                    X returnable = (X) m.invoke(null, JSONBody);
                     switch (request.getCompletion()) {
-                        case SUBMIT -> {
-                            switch (request.getEndpoint()) {
-                                case INFO -> request.getFuture().complete((TokenInfo) returned);
-                                case LYRICS -> request.getFuture().complete((SongLyrics) returned);
-                                case MADLIBS -> request.getFuture().complete((MadLib) returned);
-                                case MEME -> request.getFuture().complete((RedditMeme) returned);
-                                case REDDIT -> request.getFuture().complete((RedditPosts) returned);
-                                case TEXT -> request.getFuture().complete((RandomText) returned);
-                                case WORD -> request.getFuture().complete((RandomWord) returned);
-                                default -> throw new IllegalStateException("Unexpected value: " + request.getEndpoint());
-                            }
-                        }
-
-                        case QUEUE -> {
-                            switch (request.getEndpoint()) {
-                                case INFO -> request.getSuccessConsumer().accept((TokenInfo) returned);
-                                case LYRICS -> request.getSuccessConsumer().accept((SongLyrics) returned);
-                                case MADLIBS -> request.getSuccessConsumer().accept((MadLib) returned);
-                                case MEME -> request.getSuccessConsumer().accept((RedditMeme) returned);
-                                case REDDIT -> request.getSuccessConsumer().accept((RedditPosts) returned);
-                                case TEXT -> request.getSuccessConsumer().accept((RandomText) returned);
-                                case WORD -> request.getSuccessConsumer().accept((RandomWord) returned);
-                                default -> throw new IllegalStateException("Unexpected value: " + request.getEndpoint());
-                            }
-                        }
+                        case FUTURE -> request.getAsync().getFuture().complete(returnable);
+                        case CALLBACK -> request.getAsync().getConsumer().succeed(returnable);
                     }
+                    return;
                 }
             }
+            throw new IllegalArgumentException("Unexpected value");
         } catch (Exception ex) {
-            lgr.wan("a", ex);
+            lgr.debug("Exception occurred while processing asynchronous request:", ex);
+            switch (request.getCompletion()) {
+                case FUTURE -> request.getAsync().getFuture().completeExceptionally(ex);
+                case CALLBACK -> request.getAsync().getConsumer().fail(ex);
+            }
         }
     }
+
+    // ***************************************************************
+    // **                METHODS INVOKED REFLECTIVELY               **
+    // ***************************************************************
 
     @Nullable
     public static RandomWord mapToRandomWord(final String json) throws IOException {

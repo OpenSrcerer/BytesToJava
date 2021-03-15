@@ -1,10 +1,13 @@
 package com.opensrcerer.requestEntities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Class that encapsulates the data received from JSON requests on the
  * Reddit endpoint.
  */
-public class RedditPost {
+public final class RedditPost {
 
     /**
      * The title of this Meme.
@@ -46,9 +49,10 @@ public class RedditPost {
      */
     private final int comments;
 
-    public RedditPost(String title, String url, String link,
-                      String subreddit, String text,
-                      int upvotes, int downvotes, int comments)
+    @JsonCreator
+    public RedditPost(@JsonProperty("title") String title, @JsonProperty("url") String url, @JsonProperty("link") String link,
+                      @JsonProperty("subreddit") String subreddit, @JsonProperty("upvotes") int upvotes, @JsonProperty("text") String text,
+                      @JsonProperty("downvotes") int downvotes, @JsonProperty("comments") int comments)
     {
         this.title = title;
         this.url = url;

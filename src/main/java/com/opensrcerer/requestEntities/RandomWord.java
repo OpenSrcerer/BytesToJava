@@ -1,12 +1,16 @@
 package com.opensrcerer.requestEntities;
 
-public class RandomWord implements BTJReturnable {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public final class RandomWord implements BTJReturnable {
     /**
      * Random word retrieved by the BTB API.
      */
     private final String word;
 
-    public RandomWord(String word) {
+    @JsonCreator
+    public RandomWord(@JsonProperty("message") String word) {
         this.word = word;
     }
 

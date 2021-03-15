@@ -1,33 +1,32 @@
 package com.opensrcerer.requestEntities;
 
-public class TokenInfo implements BTJReturnable {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    /**
-     * The token that is used in a BTB instance to access the API.
-     */
-    private final String token;
+public final class TokenInfo implements BTJReturnable {
 
     /**
      * Represents the uses of this token in the allowed timeslot.
      */
-    private int uses;
+    private final int uses;
 
     /**
      * Represents the usage of the token in the past minute.
      * (According to BTB API server time).
      * If limit is -1, the token should not be ratelimited.
      */
-    private int limit;
-
-    public TokenInfo(final String token) {
-        this.token = token;
-    }
+    private final int limit;
 
     /**
-     * @return The token for the BTB API.
+     * Time until the next use reset of the provided token.
      */
-    public String getToken() {
-        return token;
+    private final int nextReset;
+
+    @JsonCreator
+    public TokenInfo(@JsonProperty("uses") int uses, @JsonProperty("limit") int limit, @JsonProperty("next_reset") int nextReset) {
+        this.uses = uses;
+        this.limit = limit;
+        this.nextReset = nextReset;
     }
 
     /**
@@ -46,18 +45,16 @@ public class TokenInfo implements BTJReturnable {
     }
 
     /**
+     * @return The time until the next use reset of the provided token (in seconds).
+     */
+    public int getNextReset() {
+        return nextReset;
+    }
+
+    /**
      * @return True if token has no ratelimit, false otherwise.
      */
     public boolean isUnlimited() {
         return limit == -1;
-    }
-
-    /**
-     * @param uses Uses of token to set.
-     * @param limit Limit of token to set.
-     */
-    public void setData(int uses, int limit) {
-        this.uses = uses;
-        this.limit = limit;
     }
 }

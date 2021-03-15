@@ -1,5 +1,6 @@
 package com.opensrcerer.util;
 
+import com.opensrcerer.BTJ;
 import com.opensrcerer.requestEntities.BTJReturnable;
 import com.opensrcerer.requestEntities.TokenInfo;
 import com.opensrcerer.requests.BTJRequest;
@@ -12,23 +13,35 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public final class RequestBuilder {
+
+    /**
+     * BTJ that holds this RequestBuilder.
+     */
+    private final BTJ btj;
+
+    /**
+     * Token for the BTJ instance to create requests.
+     */
+    private final String token;
+
     /**
      * Object that carries information about the current token.
      */
-    private final TokenInfo tokenInfo;
+    private TokenInfo tokenInfo;
 
-    public RequestBuilder(String token) {
-        this.tokenInfo = new TokenInfo(token);
+    public RequestBuilder(BTJ btj, String token) {
+        this.token = token;
+        this.btj = btj;
     }
 
     /**
      * @param request Endpoint to bind new HTTP Request to.
      * @return A new authorized Request bound to a specific endpoint.
      */
-    public Request createHttpRequest(BTJRequest<BTJReturnable> request) {
+    public Request createHttpRequest(BTJRequest<? extends BTJReturnable> request) {
         Objects.requireNonNull(request);
         return new Request.Builder()
-                .header("Authorization", tokenInfo.getToken())
+                .header("Authorization", token)
                 .url(buildUrl(request))
                 .build();
     }
@@ -64,5 +77,9 @@ public final class RequestBuilder {
         }
 
         return urlBuilder.build();
+    }
+
+    public void setTokenInfo() throws Exception {
+        tokenInfo = btj.getInfo().complete();
     }
 }

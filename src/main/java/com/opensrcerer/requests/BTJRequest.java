@@ -1,9 +1,9 @@
 package com.opensrcerer.requests;
 
+import com.opensrcerer.consumers.BTJAsync;
 import com.opensrcerer.requestEntities.BTJReturnable;
 import com.opensrcerer.util.CompletionType;
 import com.opensrcerer.util.Endpoint;
-import okhttp3.Callback;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * @param <X> Type of return value that this request has.
  * The main interface that is implemented by all BTJ Requests.
  */
-public interface BTJRequest<X extends BTJReturnable> extends Callback {
+public interface BTJRequest<X extends BTJReturnable> {
 
     // ***************************************************************
     // **                      ASYNCHRONOUS                         **
@@ -49,8 +49,8 @@ public interface BTJRequest<X extends BTJReturnable> extends Callback {
      * @return The completed request.
      * @throws RuntimeException with a descriptive message of what went wrong.
      */
-    @Nullable
-    Object complete();
+    @NotNull
+    X complete();
 
     // ***************************************************************
     // **                        GETTERS                            **
@@ -62,19 +62,9 @@ public interface BTJRequest<X extends BTJReturnable> extends Callback {
     @NotNull Request getRequest();
 
     /**
-     * @return The success consumer for this request.
+     * Return the BTJAsync object of this BTJRequest.
      */
-    @NotNull Consumer<X> getSuccessConsumer();
-
-    /**
-     * @return The failure consumer for this request.
-     */
-    @NotNull Consumer<Throwable> getFailureConsumer();
-
-    /**
-     * @return The Future to this request if it has been executed using submit().
-     */
-    @NotNull CompletableFuture<X> getFuture();
+    @Nullable BTJAsync<X> getAsync();
 
     /**
      * @return The type of Endpoint this Request refers to.

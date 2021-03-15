@@ -1,10 +1,13 @@
 package com.opensrcerer.requestEntities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Class that encapsulates the data received from JSON requests on the
  * Meme endpoint.
  */
-public class RedditMeme implements BTJReturnable {
+public final class RedditMeme implements BTJReturnable {
 
     /**
      * The title of this Meme.
@@ -41,8 +44,10 @@ public class RedditMeme implements BTJReturnable {
      */
     private final int comments;
 
-    public RedditMeme(String title, String url, String link,
-                      String subreddit, int upvotes, int downvotes, int comments)
+    @JsonCreator
+    public RedditMeme(@JsonProperty("title") String title, @JsonProperty("url") String url, @JsonProperty("link") String link,
+                      @JsonProperty("subreddit") String subreddit, @JsonProperty("upvotes") int upvotes,
+                      @JsonProperty("downvotes") int downvotes, @JsonProperty("comments") int comments)
     {
         this.title = title;
         this.url = url;
