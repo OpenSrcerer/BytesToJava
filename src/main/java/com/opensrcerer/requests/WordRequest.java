@@ -71,7 +71,7 @@ public final class WordRequest implements BTJRequest<RandomWord> {
     public RandomWord complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
-            return JSONParser.matchSynchronous(this, btj.getClient().newCall(btj.getRequest(this)).execute());
+            return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

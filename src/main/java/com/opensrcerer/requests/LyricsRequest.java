@@ -50,10 +50,10 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
     private final String artist;
 
     public LyricsRequest(BTJ btj, String songName, @Nullable String artist) {
-        this.btj = btj;
-        this.request = btj.getRequest(this);
         this.songName = songName;
         this.artist = artist;
+        this.btj = btj;
+        this.request = btj.getRequest(this);
     }
 
     // ***************************************************************
@@ -88,7 +88,7 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
     public SongLyrics complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
-            return JSONParser.matchSynchronous(this, btj.getClient().newCall(btj.getRequest(this)).execute());
+            return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

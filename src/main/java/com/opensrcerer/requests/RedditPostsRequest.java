@@ -45,10 +45,10 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
     private final int limit;
 
     public RedditPostsRequest(BTJ btj, String subreddit, int limit) {
-        this.btj = btj;
-        this.request = btj.getRequest(this);
         this.subreddit = subreddit;
         this.limit = limit;
+        this.btj = btj;
+        this.request = btj.getRequest(this);
     }
 
     // ***************************************************************
@@ -83,7 +83,7 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
     public RedditPosts complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
-            return JSONParser.matchSynchronous(this, btj.getClient().newCall(btj.getRequest(this)).execute());
+            return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

@@ -90,7 +90,7 @@ public interface BTJ {
     /**
      * @return A BTJRequest that will be executed to retrieve information
      *         about your token from the BTB API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     BTJRequest<TokenInfo> getInfo();
@@ -98,7 +98,7 @@ public interface BTJ {
     /**
      * @return A BTJRequest that will be executed to retrieve a random word from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     BTJRequest<RandomWord> getWord();
@@ -106,7 +106,7 @@ public interface BTJ {
     /**
      * @return A BTJRequest that will be executed to retrieve a random piece of text from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     BTJRequest<RandomText> getText();
@@ -114,7 +114,7 @@ public interface BTJ {
     /**
      * @return A BTJRequest that will be executed to retrieve a random MadLib from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     BTJRequest<MadLib> getMadLib();
@@ -122,7 +122,7 @@ public interface BTJ {
     /**
      * @return A BTJRequest that will be executed to retrieve a random Meme from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     BTJRequest<RedditMeme> getMeme();
@@ -131,7 +131,7 @@ public interface BTJ {
      * @param song The name of the song to look for.
      * @return A BTJRequest that will be executed to retrieve lyrics for a Song from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     @Contract("null -> fail")
@@ -142,7 +142,7 @@ public interface BTJ {
      * @param artist The artist that made this song.
      * @return A BTJRequest that will be executed to retrieve lyrics for a Song from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     @Contract("null, _ -> fail")
@@ -152,20 +152,20 @@ public interface BTJ {
      * @param subreddit Subreddit to retrieve from.
      * @return A BTJRequest that will be executed to retrieve a random word from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     @Contract("null -> fail")
-    BTJRequest<RedditPosts> getRedditPost(String subreddit);
+    BTJRequest<RedditPosts> getRedditPosts(String subreddit);
 
     /**
      * @param subreddit Subreddit to retrieve from.
      * @param limit Number of posts to retrieve.
      * @return A BTJRequest that will be executed to retrieve a random word from the
      *         BytesToBits API.
-     *         Can be executed using .queue() or .complete().
+     *         Can be executed using .queue(), .submit() or .complete().
      */
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest<RedditPosts> getRedditPost(String subreddit, int limit);
+    BTJRequest<RedditPosts> getRedditPosts(String subreddit, int limit);
 }

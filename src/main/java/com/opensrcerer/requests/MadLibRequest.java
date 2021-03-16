@@ -71,7 +71,7 @@ public final class MadLibRequest implements BTJRequest<MadLib> {
     public MadLib complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
-            return JSONParser.matchSynchronous(this, btj.getClient().newCall(btj.getRequest(this)).execute());
+            return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

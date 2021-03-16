@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opensrcerer.requestEntities.*;
 import com.opensrcerer.requests.BTJRequest;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,6 @@ public class JSONParser {
             throw new IllegalArgumentException("Invalid Request type for call.");
         }
         final String JSONBody = response.body().string();
-        System.out.println(JSONBody);
         for (Method m : JSONParser.class.getDeclaredMethods()) {
             if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
                 return (X) m.invoke(null, JSONBody);
@@ -49,7 +49,6 @@ public class JSONParser {
         }
         try {
             final String JSONBody = response.body().string();
-            System.out.println(JSONBody);
             for (Method m : JSONParser.class.getDeclaredMethods()) {
                 if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
                     X returnable = (X) m.invoke(null, JSONBody);
@@ -60,7 +59,7 @@ public class JSONParser {
                     return;
                 }
             }
-            throw new IllegalArgumentException("Unexpected value");
+            throw new IllegalArgumentException(request.getCompletion().toString());
         } catch (Exception ex) {
             lgr.debug("Exception occurred while processing asynchronous request:", ex);
             switch (request.getCompletion()) {
@@ -74,14 +73,14 @@ public class JSONParser {
     // **                METHODS INVOKED REFLECTIVELY               **
     // ***************************************************************
 
-    @Nullable
+    @NotNull
     public static RandomWord mapToRandomWord(final String json) throws IOException {
-        return mapper.readValue(json, RandomWord.class);
+        return new RandomWord(json.substring(1, json.length() - 2));
     }
 
-    @Nullable
-    public static RandomText mapToRandomText(final String json) throws IOException {
-        return mapper.readValue(json, RandomText.class);
+    @NotNull
+    public static RandomText mapToRandomText(final String json) {
+        return new RandomText(json.substring(1, json.length() - 2));
     }
 
     @Nullable

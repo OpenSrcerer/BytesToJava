@@ -161,12 +161,12 @@ class BTJImpl : BTJ {
         return LyricsRequest(this, song, artist)
     }
 
-    override fun getRedditPost(subreddit: String): BTJRequest<RedditPosts> {
+    override fun getRedditPosts(subreddit: String): BTJRequest<RedditPosts> {
         return RedditPostsRequest(this, subreddit, 1)
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun getRedditPost(subreddit: String, limit: Int): BTJRequest<RedditPosts> {
+    override fun getRedditPosts(subreddit: String, limit: Int): BTJRequest<RedditPosts> {
         if (limit < 1 || limit > 50) {
             throw IllegalArgumentException("Number of reddit posts to fetch must be between 1 and 50.")
         }

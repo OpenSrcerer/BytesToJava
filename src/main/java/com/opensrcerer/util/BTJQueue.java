@@ -7,6 +7,7 @@ import okhttp3.Response;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public final class BTJQueue {
 
@@ -37,13 +38,17 @@ public final class BTJQueue {
         // Runnable to execute while spinning
         Runnable drainQueue = () -> {
             while (true) {
-                if (Thread.interrupted() || executor.isShutdown()) {
+                if (executor.isShutdown()) {
+                    btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
                     return;
                 }
 
                 final BTJRequest<? extends BTJReturnable> request;
                 try {
-                    request = requests.take(); // Take a request from the request queue
+                    request = requests.poll(5000, TimeUnit.MILLISECONDS); // Take a request from the request queue
+                    if (request == null) {
+                        continue;
+                    }
 
                     // Identify Request completion type and init
                     switch (request.getCompletion()) {
@@ -60,12 +65,12 @@ public final class BTJQueue {
                             }
                         }
                         // Dispatch async call to the OkHttpClient dispatcher
-                        case CALLBACK -> {
-                            btj.getLogger().debug("Dispatching async call for future of type " + CompletionType.CALLBACK.name());
-                            btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
-                        }
+                        case CALLBACK -> btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
                     }
 
+                } catch (InterruptedException ex) {
+                    btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
+                    return; // Interrupted
                 } catch (Exception ex) {
                     // Other exceptions
                     btj.getLogger().error(Thread.currentThread().getName() + " encountered an exception:", ex);

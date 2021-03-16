@@ -50,7 +50,7 @@ public final class RequestBuilder {
      * @param request Request that contains the endpoint to attach to the URL.
      * @return The parsed HttpUrl.
      */
-    private static HttpUrl buildUrl(BTJRequest<?> request) {
+    private static HttpUrl buildUrl(BTJRequest<? extends BTJReturnable> request) {
         final HttpUrl url = HttpUrl.parse(Constants.API_URL.concat(request.getEndpoint().getEndpointName()));
 
         if (url == null) {
@@ -79,7 +79,7 @@ public final class RequestBuilder {
         return urlBuilder.build();
     }
 
-    public void setTokenInfo() throws Exception {
+    public void setTokenInfo() {
         tokenInfo = btj.getInfo().complete();
     }
 }

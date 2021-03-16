@@ -64,7 +64,7 @@ public final class MadLib implements BTJReturnable {
      *         Notice that you should use replace or bulkReplace to replace the questions
      *         before calling this method to avoid getting unparsed text.
      * @see    MadLib#bulkReplace(List)
-     * @see    MadLib#replace(String, String)
+     * @see    MadLib#replace(int, String)
      */
     public String getText() {
         return text;
@@ -75,8 +75,7 @@ public final class MadLib implements BTJReturnable {
      * @param questionIndex Index of MadLib word (question).
      * @param replacement Word to replace at this index.
      */
-    public void replace(String questionIndex, String replacement) {
-        Objects.requireNonNull(questionIndex);
+    public void replace(int questionIndex, String replacement) {
         Objects.requireNonNull(replacement);
         text = text.replace("{" + questionIndex + "}", replacement);
     }
@@ -93,7 +92,10 @@ public final class MadLib implements BTJReturnable {
     public String bulkReplace(List<String> toReplace) {
         Objects.requireNonNull(toReplace);
         for (int i = 0; i < toReplace.size(); ++i) {
-            text = text.replace("{" + (i + 1) + "}", toReplace.get(i));
+            text = text.replace("{" + (i) + "}", toReplace.get(i));
+            if (i == size()) {
+                return text;
+            }
         }
         return text;
     }
@@ -103,5 +105,12 @@ public final class MadLib implements BTJReturnable {
      */
     public List<String> getVariables() {
         return variables;
+    }
+
+    /**
+     * @return The number of variables required to completely fill this MadLib.
+     */
+    public int size() {
+        return variables.size();
     }
 }
