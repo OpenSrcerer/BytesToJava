@@ -1,5 +1,7 @@
 package com.opensrcerer.requestEntities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -7,7 +9,9 @@ import java.util.Collection;
  * BTJReturnable ArrayList to encapsulate RedditPost-s. Immutable.
  */
 public final class RedditPosts extends ArrayList<RedditPost> implements BTJReturnable {
-    public RedditPosts(Collection<? extends RedditPost> c) {
+
+    @JsonCreator
+    public RedditPosts(Collection<RedditPost> c) {
         super(c);
     }
 

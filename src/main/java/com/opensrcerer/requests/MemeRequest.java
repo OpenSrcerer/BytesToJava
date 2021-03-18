@@ -63,7 +63,7 @@ public final class MemeRequest implements BTJRequest<RedditMeme> {
         type = CompletionType.FUTURE;
         async = new BTJAsync<>();
         btj.invoke(this);
-        return this.async.getFuture();
+        return async.getFuture();
     }
 
     @NotNull

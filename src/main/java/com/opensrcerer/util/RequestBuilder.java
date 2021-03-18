@@ -10,6 +10,7 @@ import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.jetbrains.annotations.Nullable;
 
+import javax.security.auth.login.LoginException;
 import java.util.Objects;
 
 public final class RequestBuilder {
@@ -79,7 +80,11 @@ public final class RequestBuilder {
         return urlBuilder.build();
     }
 
-    public void setTokenInfo() {
-        tokenInfo = btj.getInfo().complete();
+    public void setTokenInfo() throws LoginException {
+        try {
+            tokenInfo = btj.getInfo().complete();
+        } catch (Exception ex) {
+            throw new LoginException("Unable to log in with the provided token. " + ex);
+        }
     }
 }

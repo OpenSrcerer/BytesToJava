@@ -69,6 +69,7 @@ class BTJImpl : BTJ {
         requests = BTJQueue(this, executor)
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
+        builder.setTokenInfo()
         lgr.debug("Finished init!")
     }
 

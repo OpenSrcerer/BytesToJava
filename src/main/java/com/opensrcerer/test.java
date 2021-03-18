@@ -1,19 +1,23 @@
 package com.opensrcerer;
 
+import com.opensrcerer.requestEntities.RedditPost;
+
 import javax.security.auth.login.LoginException;
 
 public class test {
     public static void main(String[] args) throws LoginException {
         BTJ btj = BTJ.getBTJ("NO9n.SSOqeeJwMnwZNwm8lIB0"); // Initialize BTJ with Token
 
-
-        /*
-        btj.getMeme().queue(e -> System.out.println(e.getLink()));
-        btj.getRedditPosts("dankmemes").queue(e -> System.out.println(e.get(0).getTitle()));*/
-
-        btj.getMeme().queue(e -> {
-            System.out.println(e.getSubreddit()  + " - " + e.getLink());
-            System.out.println(e.getUrl());
+        btj.getRedditPosts("tiresaretheenemy", 10).queue(redditPosts -> {
+            for (RedditPost post : redditPosts) {
+                System.out.println(post.getTitle());
+                System.out.println(post.getSubreddit());
+                System.out.println(post.getLink());
+                System.out.println(post.getUrl());
+                System.out.println(post.getUpvotes());
+                System.out.println(post.getDownvotes());
+                System.out.println("--------------");
+            }
         });
     }
 }

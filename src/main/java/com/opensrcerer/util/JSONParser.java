@@ -1,5 +1,6 @@
 package com.opensrcerer.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opensrcerer.requestEntities.*;
 import com.opensrcerer.requests.BTJRequest;
@@ -33,13 +34,19 @@ public class JSONParser {
         if (request.getCompletion() != CompletionType.SYNCHRONOUS) {
             throw new IllegalArgumentException("Invalid Request type for call.");
         }
-        final String JSONBody = response.body().string();
-        for (Method m : JSONParser.class.getDeclaredMethods()) {
-            if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
-                return (X) m.invoke(null, JSONBody);
+
+        if (response.isSuccessful()) {
+            lgr.debug("Response returned code " + response.code());
+            final String JSONBody = response.body().string();
+            for (Method m : JSONParser.class.getDeclaredMethods()) {
+                if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
+                    return (X) m.invoke(null, JSONBody);
+                }
             }
+            throw new IllegalArgumentException("Unexpected completion type");
+        } else {
+            throw new RuntimeException("Request failed: Code " + response.code() + ": " + response.message());
         }
-        throw new IllegalArgumentException("Unexpected value");
     }
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
@@ -47,7 +54,12 @@ public class JSONParser {
         if (request.getCompletion() == CompletionType.SYNCHRONOUS) {
             throw new IllegalArgumentException("Invalid Request type for call.");
         }
+
         try {
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Request failed: Code " + response.code() + ": " + response.message());
+            }
+
             final String JSONBody = response.body().string();
             for (Method m : JSONParser.class.getDeclaredMethods()) {
                 if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
@@ -61,10 +73,12 @@ public class JSONParser {
             }
             throw new IllegalArgumentException(request.getCompletion().toString());
         } catch (Exception ex) {
-            lgr.debug("Exception occurred while processing asynchronous request:", ex);
+            ex.printStackTrace();
+            lgr.debug(String.valueOf(ex));
             switch (request.getCompletion()) {
                 case FUTURE -> request.getAsync().getFuture().completeExceptionally(ex);
                 case CALLBACK -> request.getAsync().getConsumer().fail(ex);
+                default -> throw new RuntimeException("Unexpected completion type");
             }
         }
     }
@@ -74,7 +88,7 @@ public class JSONParser {
     // ***************************************************************
 
     @NotNull
-    public static RandomWord mapToRandomWord(final String json) throws IOException {
+    public static RandomWord mapToRandomWord(final String json) {
         return new RandomWord(json.substring(1, json.length() - 2));
     }
 
@@ -95,7 +109,8 @@ public class JSONParser {
 
     @Nullable
     public static RedditPosts mapToRedditPosts(final String json) throws IOException {
-        return mapper.readValue(json, RedditPosts.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(json, new TypeReference<>() {});
     }
 
     @Nullable
