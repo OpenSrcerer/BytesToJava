@@ -1,11 +1,11 @@
-package com.opensrcerer.requests;
+package github.opensrcerer.requests;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.consumers.BTJAsync;
-import com.opensrcerer.requestEntities.RandomText;
-import com.opensrcerer.util.CompletionType;
-import com.opensrcerer.util.Endpoint;
-import com.opensrcerer.util.JSONParser;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.consumers.BTJAsync;
+import github.opensrcerer.requestEntities.RandomText;
+import github.opensrcerer.util.CompletionType;
+import github.opensrcerer.util.Endpoint;
+import github.opensrcerer.util.JSONParser;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 

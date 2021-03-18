@@ -1,9 +1,9 @@
-package com.opensrcerer
+package github.opensrcerer
 
-import com.opensrcerer.requestEntities.*
-import com.opensrcerer.requests.*
-import com.opensrcerer.util.BTJQueue
-import com.opensrcerer.util.RequestBuilder
+import github.opensrcerer.requestEntities.*
+import github.opensrcerer.requests.*
+import github.opensrcerer.util.BTJQueue
+import github.opensrcerer.util.RequestBuilder
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jetbrains.annotations.Contract
@@ -12,7 +12,6 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
-import java.util.logging.Logger
 import javax.security.auth.login.LoginException
 import kotlin.collections.ArrayList
 import kotlin.jvm.Throws

@@ -1,18 +1,18 @@
-package com.opensrcerer.requests;
+package github.opensrcerer.requests;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.consumers.BTJAsync;
-import com.opensrcerer.requestEntities.MadLib;
-import com.opensrcerer.util.CompletionType;
-import com.opensrcerer.util.Endpoint;
-import com.opensrcerer.util.JSONParser;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.consumers.BTJAsync;
+import github.opensrcerer.requestEntities.RedditMeme;
+import github.opensrcerer.util.CompletionType;
+import github.opensrcerer.util.Endpoint;
+import github.opensrcerer.util.JSONParser;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class MadLibRequest implements BTJRequest<MadLib> {
+public final class MemeRequest implements BTJRequest<RedditMeme> {
 
     /**
      * The BTJ instance for this Request.
@@ -27,14 +27,14 @@ public final class MadLibRequest implements BTJRequest<MadLib> {
     /**
      * Consumer to handle futures & callbacks.
      */
-    private BTJAsync<MadLib> async = null;
+    private BTJAsync<RedditMeme> async = null;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
      */
     private CompletionType type;
 
-    public MadLibRequest(BTJ btj) {
+    public MemeRequest(BTJ btj) {
         this.btj = btj;
         this.request = btj.getRequest(this);
     }
@@ -44,14 +44,14 @@ public final class MadLibRequest implements BTJRequest<MadLib> {
     // ***************************************************************
 
     @Override
-    public void queue(Consumer<MadLib> success) {
+    public void queue(Consumer<RedditMeme> success) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, null);
         btj.invoke(this);
     }
 
     @Override
-    public void queue(Consumer<MadLib> success, Consumer<Throwable> failure) {
+    public void queue(Consumer<RedditMeme> success, Consumer<Throwable> failure) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, failure);
         btj.invoke(this);
@@ -59,16 +59,16 @@ public final class MadLibRequest implements BTJRequest<MadLib> {
 
     @NotNull
     @Override
-    public CompletableFuture<MadLib> submit() {
+    public CompletableFuture<RedditMeme> submit() {
         type = CompletionType.FUTURE;
         async = new BTJAsync<>();
         btj.invoke(this);
-        return this.async.getFuture();
+        return async.getFuture();
     }
 
     @NotNull
     @Override
-    public MadLib complete() {
+    public RedditMeme complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
             return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
@@ -89,14 +89,14 @@ public final class MadLibRequest implements BTJRequest<MadLib> {
 
     @NotNull
     @Override
-    public BTJAsync<MadLib> getAsync() {
+    public BTJAsync<RedditMeme> getAsync() {
         return async;
     }
 
     @NotNull
     @Override
     public Endpoint getEndpoint() {
-        return Endpoint.MADLIBS;
+        return Endpoint.MEME;
     }
 
     @NotNull

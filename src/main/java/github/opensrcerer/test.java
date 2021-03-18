@@ -1,6 +1,6 @@
-package com.opensrcerer;
+package github.opensrcerer;
 
-import com.opensrcerer.requestEntities.RedditPost;
+import github.opensrcerer.requestEntities.RedditPost;
 
 import javax.security.auth.login.LoginException;
 

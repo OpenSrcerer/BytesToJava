@@ -1,18 +1,18 @@
-package com.opensrcerer.requests;
+package github.opensrcerer.requests;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.consumers.BTJAsync;
-import com.opensrcerer.requestEntities.RandomWord;
-import com.opensrcerer.util.CompletionType;
-import com.opensrcerer.util.Endpoint;
-import com.opensrcerer.util.JSONParser;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.consumers.BTJAsync;
+import github.opensrcerer.requestEntities.RedditPosts;
+import github.opensrcerer.util.CompletionType;
+import github.opensrcerer.util.Endpoint;
+import github.opensrcerer.util.JSONParser;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class WordRequest implements BTJRequest<RandomWord> {
+public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
 
     /**
      * The BTJ instance for this Request.
@@ -27,14 +27,26 @@ public final class WordRequest implements BTJRequest<RandomWord> {
     /**
      * Consumer to handle futures & callbacks.
      */
-    private BTJAsync<RandomWord> async = null;
+    private BTJAsync<RedditPosts> async = null;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
      */
     private CompletionType type;
 
-    public WordRequest(BTJ btj) {
+    /**
+     * The subreddit to fetch posts from.
+     */
+    private final String subreddit;
+
+    /**
+     * Number of posts to fetch.
+     */
+    private final int limit;
+
+    public RedditPostsRequest(BTJ btj, String subreddit, int limit) {
+        this.subreddit = subreddit;
+        this.limit = limit;
         this.btj = btj;
         this.request = btj.getRequest(this);
     }
@@ -44,14 +56,14 @@ public final class WordRequest implements BTJRequest<RandomWord> {
     // ***************************************************************
 
     @Override
-    public void queue(Consumer<RandomWord> success) {
+    public void queue(Consumer<RedditPosts> success) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, null);
         btj.invoke(this);
     }
 
     @Override
-    public void queue(Consumer<RandomWord> success, Consumer<Throwable> failure) {
+    public void queue(Consumer<RedditPosts> success, Consumer<Throwable> failure) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, failure);
         btj.invoke(this);
@@ -59,7 +71,7 @@ public final class WordRequest implements BTJRequest<RandomWord> {
 
     @NotNull
     @Override
-    public CompletableFuture<RandomWord> submit() {
+    public CompletableFuture<RedditPosts> submit() {
         type = CompletionType.FUTURE;
         async = new BTJAsync<>();
         btj.invoke(this);
@@ -68,7 +80,7 @@ public final class WordRequest implements BTJRequest<RandomWord> {
 
     @NotNull
     @Override
-    public RandomWord complete() {
+    public RedditPosts complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
             return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
@@ -89,20 +101,33 @@ public final class WordRequest implements BTJRequest<RandomWord> {
 
     @NotNull
     @Override
-    public BTJAsync<RandomWord> getAsync() {
+    public BTJAsync<RedditPosts> getAsync() {
         return async;
     }
-
 
     @NotNull
     @Override
     public Endpoint getEndpoint() {
-        return Endpoint.WORD;
+        return Endpoint.REDDIT;
     }
 
     @NotNull
     @Override
     public CompletionType getCompletion() {
         return type;
+    }
+
+    /**
+     * @return The subreddit this request will fetch from.
+     */
+    public String getSubreddit() {
+        return subreddit;
+    }
+
+    /**
+     * @return The number of RedditPost-s that will be fetched by this request.
+     */
+    public int getLimit() {
+        return limit;
     }
 }

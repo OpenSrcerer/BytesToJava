@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>opensrcerer.com.github</groupId>
+    <groupId>io.github.opensrcerer</groupId>
     <artifactId>BytesToJava</artifactId>
     <version>0.0.1</version>
 
@@ -24,7 +24,7 @@
                 </executions>
                 <configuration>
                     <executable>maven</executable>
-                    <mainClass>com.opensrcerer.test</mainClass>
+                    <mainClass>github.opensrcerer.test</mainClass>
                 </configuration>
             </plugin>
 
@@ -52,6 +52,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>

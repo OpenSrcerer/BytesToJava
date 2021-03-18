@@ -1,7 +1,8 @@
-package com.opensrcerer;
+package github.opensrcerer;
 
 import com.opensrcerer.requestEntities.*;
-import com.opensrcerer.requests.BTJRequest;
+import github.opensrcerer.requests.BTJRequest;
+import github.opensrcerer.requestEntities.*;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.jetbrains.annotations.Contract;

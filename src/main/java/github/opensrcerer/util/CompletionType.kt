@@ -1,4 +1,4 @@
-package com.opensrcerer.util
+package github.opensrcerer.util
 
 enum class CompletionType {
     CALLBACK, FUTURE, SYNCHRONOUS

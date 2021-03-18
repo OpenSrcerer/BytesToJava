@@ -1,9 +1,9 @@
-package com.opensrcerer.requests;
+package github.opensrcerer.requests;
 
-import com.opensrcerer.consumers.BTJAsync;
-import com.opensrcerer.requestEntities.BTJReturnable;
-import com.opensrcerer.util.CompletionType;
-import com.opensrcerer.util.Endpoint;
+import github.opensrcerer.consumers.BTJAsync;
+import github.opensrcerer.requestEntities.BTJReturnable;
+import github.opensrcerer.util.CompletionType;
+import github.opensrcerer.util.Endpoint;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,7 +64,8 @@ public interface BTJRequest<X extends BTJReturnable> {
     /**
      * Return the BTJAsync object of this BTJRequest.
      */
-    @Nullable BTJAsync<X> getAsync();
+    @Nullable
+    BTJAsync<X> getAsync();
 
     /**
      * @return The type of Endpoint this Request refers to.
@@ -74,5 +75,6 @@ public interface BTJRequest<X extends BTJReturnable> {
     /**
      * @return The way this Request should be asynchronously completed (if at all).
      */
-    @NotNull CompletionType getCompletion();
+    @NotNull
+    CompletionType getCompletion();
 }

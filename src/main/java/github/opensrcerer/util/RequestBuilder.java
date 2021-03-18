@@ -1,11 +1,11 @@
-package com.opensrcerer.util;
+package github.opensrcerer.util;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.requestEntities.BTJReturnable;
-import com.opensrcerer.requestEntities.TokenInfo;
-import com.opensrcerer.requests.BTJRequest;
-import com.opensrcerer.requests.LyricsRequest;
-import com.opensrcerer.requests.RedditPostsRequest;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.requestEntities.BTJReturnable;
+import github.opensrcerer.requestEntities.TokenInfo;
+import github.opensrcerer.requests.BTJRequest;
+import github.opensrcerer.requests.LyricsRequest;
+import github.opensrcerer.requests.RedditPostsRequest;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.jetbrains.annotations.Nullable;

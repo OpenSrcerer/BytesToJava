@@ -1,9 +1,10 @@
-package com.opensrcerer.util;
+package github.opensrcerer.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opensrcerer.requestEntities.*;
-import com.opensrcerer.requests.BTJRequest;
+import github.opensrcerer.requestEntities.*;
+import github.opensrcerer.requests.BTJRequest;
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

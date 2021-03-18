@@ -1,19 +1,18 @@
-package com.opensrcerer.requests;
+package github.opensrcerer.requests;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.consumers.BTJAsync;
-import com.opensrcerer.requestEntities.SongLyrics;
-import com.opensrcerer.util.CompletionType;
-import com.opensrcerer.util.Endpoint;
-import com.opensrcerer.util.JSONParser;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.consumers.BTJAsync;
+import github.opensrcerer.requestEntities.RandomWord;
+import github.opensrcerer.util.CompletionType;
+import github.opensrcerer.util.Endpoint;
+import github.opensrcerer.util.JSONParser;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class LyricsRequest implements BTJRequest<SongLyrics> {
+public final class WordRequest implements BTJRequest<RandomWord> {
 
     /**
      * The BTJ instance for this Request.
@@ -28,30 +27,14 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
     /**
      * Consumer to handle futures & callbacks.
      */
-    private BTJAsync<SongLyrics> async = null;
+    private BTJAsync<RandomWord> async = null;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
      */
     private CompletionType type;
 
-    // ***************************************************************
-    // **                       ARGUMENTS                           **
-    // ***************************************************************
-
-    /**
-     * Name of the Song to fetch lyrics for.
-     */
-    private final String songName;
-
-    /**
-     * Name of the artist that made the song.
-     */
-    private final String artist;
-
-    public LyricsRequest(BTJ btj, String songName, @Nullable String artist) {
-        this.songName = songName;
-        this.artist = artist;
+    public WordRequest(BTJ btj) {
         this.btj = btj;
         this.request = btj.getRequest(this);
     }
@@ -61,14 +44,14 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
     // ***************************************************************
 
     @Override
-    public void queue(Consumer<SongLyrics> success) {
+    public void queue(Consumer<RandomWord> success) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, null);
         btj.invoke(this);
     }
 
     @Override
-    public void queue(Consumer<SongLyrics> success, Consumer<Throwable> failure) {
+    public void queue(Consumer<RandomWord> success, Consumer<Throwable> failure) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, failure);
         btj.invoke(this);
@@ -76,7 +59,7 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
 
     @NotNull
     @Override
-    public CompletableFuture<SongLyrics> submit() {
+    public CompletableFuture<RandomWord> submit() {
         type = CompletionType.FUTURE;
         async = new BTJAsync<>();
         btj.invoke(this);
@@ -85,7 +68,7 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
 
     @NotNull
     @Override
-    public SongLyrics complete() {
+    public RandomWord complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
             return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
@@ -106,33 +89,20 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
 
     @NotNull
     @Override
-    public BTJAsync<SongLyrics> getAsync() {
+    public BTJAsync<RandomWord> getAsync() {
         return async;
     }
+
 
     @NotNull
     @Override
     public Endpoint getEndpoint() {
-        return Endpoint.LYRICS;
+        return Endpoint.WORD;
     }
 
     @NotNull
     @Override
     public CompletionType getCompletion() {
         return type;
-    }
-
-    /**
-     * @return The name of the song that will be looked up in this BTJRequest.
-     */
-    public String getSongName() {
-        return songName;
-    }
-
-    /**
-     * @return The name of the artist who created the song that will be looked up in this BTJRequest.
-     */
-    public String getArtist() {
-        return artist;
     }
 }

@@ -1,18 +1,19 @@
-package com.opensrcerer.requests;
+package github.opensrcerer.requests;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.consumers.BTJAsync;
-import com.opensrcerer.requestEntities.RedditPosts;
-import com.opensrcerer.util.CompletionType;
-import com.opensrcerer.util.Endpoint;
-import com.opensrcerer.util.JSONParser;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.consumers.BTJAsync;
+import github.opensrcerer.requestEntities.SongLyrics;
+import github.opensrcerer.util.CompletionType;
+import github.opensrcerer.util.Endpoint;
+import github.opensrcerer.util.JSONParser;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
+public final class LyricsRequest implements BTJRequest<SongLyrics> {
 
     /**
      * The BTJ instance for this Request.
@@ -27,26 +28,30 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
     /**
      * Consumer to handle futures & callbacks.
      */
-    private BTJAsync<RedditPosts> async = null;
+    private BTJAsync<SongLyrics> async = null;
 
     /**
      * The way this Request should be asynchronously executed (if at all).
      */
     private CompletionType type;
 
-    /**
-     * The subreddit to fetch posts from.
-     */
-    private final String subreddit;
+    // ***************************************************************
+    // **                       ARGUMENTS                           **
+    // ***************************************************************
 
     /**
-     * Number of posts to fetch.
+     * Name of the Song to fetch lyrics for.
      */
-    private final int limit;
+    private final String songName;
 
-    public RedditPostsRequest(BTJ btj, String subreddit, int limit) {
-        this.subreddit = subreddit;
-        this.limit = limit;
+    /**
+     * Name of the artist that made the song.
+     */
+    private final String artist;
+
+    public LyricsRequest(BTJ btj, String songName, @Nullable String artist) {
+        this.songName = songName;
+        this.artist = artist;
         this.btj = btj;
         this.request = btj.getRequest(this);
     }
@@ -56,14 +61,14 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
     // ***************************************************************
 
     @Override
-    public void queue(Consumer<RedditPosts> success) {
+    public void queue(Consumer<SongLyrics> success) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, null);
         btj.invoke(this);
     }
 
     @Override
-    public void queue(Consumer<RedditPosts> success, Consumer<Throwable> failure) {
+    public void queue(Consumer<SongLyrics> success, Consumer<Throwable> failure) {
         type = CompletionType.CALLBACK;
         async = new BTJAsync<>(this, success, failure);
         btj.invoke(this);
@@ -71,7 +76,7 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
 
     @NotNull
     @Override
-    public CompletableFuture<RedditPosts> submit() {
+    public CompletableFuture<SongLyrics> submit() {
         type = CompletionType.FUTURE;
         async = new BTJAsync<>();
         btj.invoke(this);
@@ -80,7 +85,7 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
 
     @NotNull
     @Override
-    public RedditPosts complete() {
+    public SongLyrics complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
             return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
@@ -101,14 +106,14 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
 
     @NotNull
     @Override
-    public BTJAsync<RedditPosts> getAsync() {
+    public BTJAsync<SongLyrics> getAsync() {
         return async;
     }
 
     @NotNull
     @Override
     public Endpoint getEndpoint() {
-        return Endpoint.REDDIT;
+        return Endpoint.LYRICS;
     }
 
     @NotNull
@@ -118,16 +123,16 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
     }
 
     /**
-     * @return The subreddit this request will fetch from.
+     * @return The name of the song that will be looked up in this BTJRequest.
      */
-    public String getSubreddit() {
-        return subreddit;
+    public String getSongName() {
+        return songName;
     }
 
     /**
-     * @return The number of RedditPost-s that will be fetched by this request.
+     * @return The name of the artist who created the song that will be looked up in this BTJRequest.
      */
-    public int getLimit() {
-        return limit;
+    public String getArtist() {
+        return artist;
     }
 }

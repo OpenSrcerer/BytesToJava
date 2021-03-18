@@ -1,8 +1,8 @@
-package com.opensrcerer.util;
+package github.opensrcerer.util;
 
-import com.opensrcerer.BTJ;
-import com.opensrcerer.requestEntities.BTJReturnable;
-import com.opensrcerer.requests.BTJRequest;
+import github.opensrcerer.BTJ;
+import github.opensrcerer.requestEntities.BTJReturnable;
+import github.opensrcerer.requests.BTJRequest;
 import okhttp3.Response;
 
 import java.util.concurrent.ExecutorService;
