@@ -8,6 +8,22 @@
     <artifactId>BytesToJava</artifactId>
     <version>0.0.1</version>
 
+    <name>BytesToJava</name>
+    <description>This is an API wrapper for the BytesToBits API written in Java and Kotlin.</description>
+    <url>https://github.com/OpenSrcerer/bytestojava</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/OpenSrcerer/bytestojava</url>
+    </scm>
+
     <build>
         <defaultGoal>exec:java</defaultGoal>
         <plugins>

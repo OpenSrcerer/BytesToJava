@@ -2,7 +2,6 @@ package github.opensrcerer.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opensrcerer.requestEntities.*;
 import github.opensrcerer.requestEntities.*;
 import github.opensrcerer.requests.BTJRequest;
 import okhttp3.Response;
