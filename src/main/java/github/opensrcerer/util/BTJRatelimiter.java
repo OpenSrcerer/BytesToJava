@@ -5,6 +5,7 @@ import github.opensrcerer.requestEntities.TokenInfo;
 
 import javax.security.auth.login.LoginException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,11 @@ public class BTJRatelimiter {
     private final AtomicBoolean fallback = new AtomicBoolean(false);
 
     /**
+     * Future that will contain the scheduled action
+     */
+    private final ScheduledFuture<?> future;
+
+    /**
      * Object that carries information about the current token.
      */
     private TokenInfo tokenInfo;
@@ -48,24 +54,34 @@ public class BTJRatelimiter {
             fallback.set(false);
         };
 
-        scheduledExecutor.scheduleAtFixedRate(r, tokenInfo.getNextReset(), 60, TimeUnit.SECONDS);
+        future = this.scheduledExecutor.scheduleAtFixedRate(r, tokenInfo.getNextReset(), 60, TimeUnit.SECONDS);
     }
 
     /**
-     * Increase the uses of the API by 1.
+     * Increments the number of performed requests.
      */
-    public void incrementUses() {
-        int u = uses.getAndIncrement();
-        if (u >= tokenInfo.getLimit()) {
+    public synchronized void incrementContinue() {
+        int u = uses.incrementAndGet();
+        System.out.println("Total uses: " + uses.get());
+
+        if (u >= 19) {
             fallback.set(true);
+            System.out.println("Falling Back - " + uses.get());
         }
     }
 
     /**
      * @return Whether the request queue should fallback.
      */
-    public boolean getFallback() {
+    public boolean fallback() {
         return fallback.get();
+    }
+
+    /**
+     * @return For how long the queue should fall back (in ms).
+     */
+    public long getFallbackTime() {
+        return future.getDelay(TimeUnit.MILLISECONDS);
     }
 
     /**

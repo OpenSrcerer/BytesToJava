@@ -9,7 +9,6 @@ import okhttp3.Request
 import org.jetbrains.annotations.Contract
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadFactory
@@ -49,9 +48,9 @@ class BTJImpl : BTJ {
     @Throws(LoginException::class)
     constructor(token: String) {
         lgr.debug("Constructing queue with default executor...")
-        requests = BTJQueue(this, defaultExecutor, defaultScheduledExecutor)
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
+        requests = BTJQueue(this, twinScheduledExec, singleScheduledExec)
         lgr.debug("Finished init!")
     }
 
@@ -63,11 +62,11 @@ class BTJImpl : BTJ {
      *         BLOCKED as it is used to drain a LinkedBlockingQueue.
      */
     @Throws(LoginException::class)
-    constructor(token: String, executor: ExecutorService) {
+    constructor(token: String, executor: ScheduledExecutorService) {
         lgr.debug("Initializing BTJ instance...")
-        requests = BTJQueue(this, executor, defaultScheduledExecutor)
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
+        requests = BTJQueue(this, executor, singleScheduledExec)
         lgr.debug("Finished init!")
     }
 
@@ -94,9 +93,9 @@ class BTJImpl : BTJ {
      * @return The default ScheduledExecutorService using a named ThreadFactory.
      */
     private companion object {
-        private val defaultExecutor: ExecutorService
+        private val twinScheduledExec: ScheduledExecutorService
             get() {
-                val nonScheduledFactory: ThreadFactory = object : ThreadFactory {
+                val scheduledFactory: ThreadFactory = object : ThreadFactory {
                     private var counter = 1
 
                     @Contract("_ -> new")
@@ -104,10 +103,10 @@ class BTJImpl : BTJ {
                         return Thread(r, "BTJ-Requester-" + counter++)
                     }
                 }
-                return Executors.newScheduledThreadPool(2, nonScheduledFactory)
+                return Executors.newScheduledThreadPool(2, scheduledFactory)
             }
 
-        private val defaultScheduledExecutor: ScheduledExecutorService
+        private val singleScheduledExec: ScheduledExecutorService
             get() {
                 val scheduledFactory: ThreadFactory = object : ThreadFactory {
                     private var counter = 1

@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import javax.security.auth.login.LoginException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Interface for the BytesToJava API.
@@ -34,7 +34,7 @@ public interface BTJ {
      * @return Get a BTJ instance that executes requests on the provided ExecutorService.
      *         Only use this if you know what you're doing.
      */
-    static BTJImpl getBTJ(String token, ExecutorService executor) throws LoginException {
+    static BTJImpl getBTJ(String token, ScheduledExecutorService executor) throws LoginException {
         Objects.requireNonNull(token);
         Objects.requireNonNull(executor);
         return new BTJImpl(token, executor);

@@ -21,7 +21,7 @@ public final class BTJQueue {
     /**
      * Pool of threads to drain requests queue.
      */
-    private final ExecutorService executor;
+    private final ScheduledExecutorService executor;
 
     /**
      * The ratelimiter for this queue.
@@ -33,57 +33,16 @@ public final class BTJQueue {
      */
     private final LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> requests = new LinkedBlockingQueue<>();
 
-    public BTJQueue(BTJ btj, ExecutorService executor, ScheduledExecutorService scheduledExecutor) throws LoginException {
+    /**
+     * Runnable to be executed by worker threads.
+     */
+    private final Runnable drainQueue;
+
+    public BTJQueue(BTJ btj, ScheduledExecutorService executor, ScheduledExecutorService scheduledExecutor) throws LoginException {
         this.btj = btj;
         this.executor = executor;
         this.ratelimiter = new BTJRatelimiter(btj, scheduledExecutor);
-
-        // Runnable to execute while spinning
-        Runnable drainQueue = () -> {
-            while (true) {
-                if (executor.isShutdown()) {
-                    btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
-                    return;
-                }
-
-                final BTJRequest<? extends BTJReturnable> request;
-                try {
-                    request = requests.poll(5000, TimeUnit.MILLISECONDS); // Take a request from the request queue
-                    if (request == null) {
-                        continue;
-                    }
-
-                    // Identify Request completion type and init
-                    switch (request.getCompletion()) {
-                        case FUTURE -> {
-                            try {
-                                // Await synchronous response on worker thread
-                                Response response = btj.getClient().newCall(request.getRequest()).execute();
-                                btj.getLogger().debug("Received response for Request of type " + CompletionType.FUTURE.name());
-                                JSONParser.matchAsynchronous(request, response);
-                            } catch (Exception ex) {
-                                // Exception handling, complete future exceptionally
-                                btj.getLogger().debug("Received exception for Request of type " + CompletionType.FUTURE.name());
-                                request.getAsync().getFuture().completeExceptionally(ex);
-                            }
-                        }
-                        // Dispatch async call to the OkHttpClient dispatcher
-                        case CALLBACK -> btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
-                    }
-
-                } catch (InterruptedException ex) {
-                    btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
-                    return; // Interrupted
-                } catch (Exception ex) {
-                    // Other exceptions
-                    btj.getLogger().error(Thread.currentThread().getName() + " encountered an exception:", ex);
-                } catch (Error err) {
-                    // Fatal Error, terminate instance
-                    btj.getLogger().error("A fatal error was thrown. BTJ instance terminating. Details:", err);
-                    btj.shutdownNow();
-                }
-            }
-        };
+        this.drainQueue = runnable();
 
         // Submit twice for two threads
         this.executor.submit(drainQueue);
@@ -107,5 +66,64 @@ public final class BTJQueue {
         } catch (InterruptedException ex) {
             btj.getLogger().warn("Request queue interrupted while waiting to insert Request!");
         }
+    }
+
+    private void scheduleDelayed(long millis) {
+        this.executor.schedule(drainQueue, millis, TimeUnit.MILLISECONDS);
+    }
+
+    private Runnable runnable() {
+        return () -> {
+            while (true) {
+                try {
+                    if (executor.isShutdown()) {
+                        btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
+                        return;
+                    }
+
+                    if (ratelimiter.fallback()) {
+                        long fallbackTime = ratelimiter.getFallbackTime();
+                        btj.getLogger().debug(Thread.currentThread().getName() + " - Falling back for " + fallbackTime + " ms");
+                        scheduleDelayed(fallbackTime);
+                        return;
+                    }
+
+                    // Take a request from the request queue
+                    final BTJRequest<? extends BTJReturnable> request = requests.take();
+
+                    // Identify Request completion type and init
+                    switch (request.getCompletion()) {
+                        case FUTURE -> {
+                            try {
+                                // Await synchronous response on worker thread
+                                Response response = btj.getClient().newCall(request.getRequest()).execute();
+                                btj.getLogger().debug("Received response for Request of type " + CompletionType.FUTURE.name());
+                                JSONParser.matchAsynchronous(request, response);
+                            } catch (Exception ex) {
+                                // Exception handling, complete future exceptionally
+                                btj.getLogger().debug("Received exception for Request of type " + CompletionType.FUTURE.name());
+                                request.getAsync().getFuture().completeExceptionally(ex);
+                            }
+                        }
+                        // Dispatch async call to the OkHttpClient dispatcher
+                        case CALLBACK -> btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
+                        default -> throw new RuntimeException("Invalid Request type in queue");
+                    }
+
+                    ratelimiter.incrementContinue();
+
+                } catch (InterruptedException ex) {
+                    btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
+                    return; // Interrupted
+                } catch (Exception ex) {
+                    // Other exceptions
+                    btj.getLogger().error(Thread.currentThread().getName() + " encountered an exception:", ex);
+                } catch (Error err) {
+                    // Fatal Error, terminate instance
+                    btj.getLogger().error("A fatal error was thrown. BTJ instance terminating. Details:", err);
+                    btj.shutdownNow();
+                }
+            }
+        };
     }
 }
