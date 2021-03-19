@@ -23,19 +23,19 @@ public final class BTJAsync<X extends BTJReturnable> {
      * Constructs a new BTJAsync object that uses futures.
      */
     public BTJAsync() {
-        this.consumer = null;
-        this.future = new CompletableFuture<>();
+        consumer = null;
+        future = new CompletableFuture<>();
     }
 
     /**
      * Constructs a new BTJAsync object that uses callbacks.
      */
     public BTJAsync(BTJRequest<X> request, Consumer<X> success, @Nullable Consumer<Throwable> fail) {
-        this.future = null;
+        future = null;
         if (fail == null) {
-            this.consumer = new BTJConsumer<>(request, success);
+            consumer = new BTJConsumer<>(request, success);
         } else {
-            this.consumer = new BTJConsumer<>(request, success, fail);
+            consumer = new BTJConsumer<>(request, success, fail);
         }
     }
 

@@ -69,11 +69,6 @@ public interface BTJ {
     OkHttpClient getClient();
 
     /**
-     * @return True if the BTJ instance is currently falling back, false otherwise.
-     */
-    boolean isFallback();
-
-    /**
      * Shuts down this instance of BTJ.
      */
     void shutdown();

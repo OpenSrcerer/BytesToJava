@@ -2,7 +2,6 @@ package github.opensrcerer.util;
 
 import github.opensrcerer.BTJ;
 import github.opensrcerer.requestEntities.BTJReturnable;
-import github.opensrcerer.requestEntities.TokenInfo;
 import github.opensrcerer.requests.BTJRequest;
 import github.opensrcerer.requests.LyricsRequest;
 import github.opensrcerer.requests.RedditPostsRequest;
@@ -10,7 +9,6 @@ import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.jetbrains.annotations.Nullable;
 
-import javax.security.auth.login.LoginException;
 import java.util.Objects;
 
 public final class RequestBuilder {
@@ -24,11 +22,6 @@ public final class RequestBuilder {
      * Token for the BTJ instance to create requests.
      */
     private final String token;
-
-    /**
-     * Object that carries information about the current token.
-     */
-    private TokenInfo tokenInfo;
 
     public RequestBuilder(BTJ btj, String token) {
         this.token = token;
@@ -78,13 +71,5 @@ public final class RequestBuilder {
         }
 
         return urlBuilder.build();
-    }
-
-    public void setTokenInfo() throws LoginException {
-        try {
-            tokenInfo = btj.getInfo().complete();
-        } catch (Exception ex) {
-            throw new LoginException("Unable to log in with the provided token. " + ex);
-        }
     }
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadFactory
 import javax.security.auth.login.LoginException
 import kotlin.collections.ArrayList
@@ -48,10 +49,9 @@ class BTJImpl : BTJ {
     @Throws(LoginException::class)
     constructor(token: String) {
         lgr.debug("Constructing queue with default executor...")
-        requests = BTJQueue(this, defaultExecutor)
+        requests = BTJQueue(this, defaultExecutor, defaultScheduledExecutor)
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
-        builder.setTokenInfo()
         lgr.debug("Finished init!")
     }
 
@@ -65,10 +65,9 @@ class BTJImpl : BTJ {
     @Throws(LoginException::class)
     constructor(token: String, executor: ExecutorService) {
         lgr.debug("Initializing BTJ instance...")
-        requests = BTJQueue(this, executor)
+        requests = BTJQueue(this, executor, defaultScheduledExecutor)
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
-        builder.setTokenInfo()
         lgr.debug("Finished init!")
     }
 
@@ -107,6 +106,19 @@ class BTJImpl : BTJ {
                 }
                 return Executors.newScheduledThreadPool(2, nonScheduledFactory)
             }
+
+        private val defaultScheduledExecutor: ScheduledExecutorService
+            get() {
+                val scheduledFactory: ThreadFactory = object : ThreadFactory {
+                    private var counter = 1
+
+                    @Contract("_ -> new")
+                    override fun newThread(r: Runnable): Thread {
+                        return Thread(r, "BTJ-Scheduler-" + counter++)
+                    }
+                }
+                return Executors.newSingleThreadScheduledExecutor(scheduledFactory)
+            }
     }
 
     // -----------------------------------------------
@@ -125,10 +137,6 @@ class BTJImpl : BTJ {
 
     override fun getClient(): OkHttpClient {
         return client
-    }
-
-    override fun isFallback(): Boolean {
-        return requests.isFallback
     }
 
     // -----------------------------------------------

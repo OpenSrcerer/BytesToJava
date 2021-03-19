@@ -47,7 +47,6 @@ public interface BTJRequest<X extends BTJReturnable> {
     /**
      * Block this thread until the request is completed.
      * @return The completed request.
-     * @throws RuntimeException with a descriptive message of what went wrong.
      */
     @NotNull
     X complete();

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
@@ -30,36 +31,32 @@ public class JSONParser {
 
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public static <X extends BTJReturnable> X matchSynchronous(BTJRequest<X> request, Response response) throws Exception {
+    public static <X extends BTJReturnable> X matchSynchronous(@NotNull BTJRequest<X> request, Response response) throws Exception {
         if (request.getCompletion() != CompletionType.SYNCHRONOUS) {
             throw new IllegalArgumentException("Invalid Request type for call.");
         }
 
-        if (response.isSuccessful()) {
-            lgr.debug("Response returned code " + response.code());
-            final String JSONBody = response.body().string();
-            for (Method m : JSONParser.class.getDeclaredMethods()) {
-                if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
-                    return (X) m.invoke(null, JSONBody);
-                }
+        checkResponse(response);
+        lgr.debug("Successful response for request " + request.getEndpoint().getEndpointName() + " returned code " + response.code());
+
+        final String JSONBody = response.body().string();
+        for (Method m : JSONParser.class.getDeclaredMethods()) {
+            if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
+                return (X) m.invoke(null, JSONBody);
             }
-            throw new IllegalArgumentException("Unexpected completion type");
-        } else {
-            throw new RuntimeException("Request failed: Code " + response.code() + ": " + response.message());
         }
+        throw new IllegalArgumentException("Unexpected completion type");
     }
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public static <X extends BTJReturnable> void matchAsynchronous(BTJRequest<X> request, Response response) {
+    public static <X extends BTJReturnable> void matchAsynchronous(@NotNull BTJRequest<X> request, Response response) {
         if (request.getCompletion() == CompletionType.SYNCHRONOUS) {
             throw new IllegalArgumentException("Invalid Request type for call.");
         }
 
         try {
-            if (!response.isSuccessful()) {
-                throw new RuntimeException("Request failed: Code " + response.code() + ": " + response.message());
-            }
-
+            checkResponse(response);
+            lgr.debug("Successful response for request " + request.getEndpoint().getEndpointName() + " returned code " + response.code());
             final String JSONBody = response.body().string();
             for (Method m : JSONParser.class.getDeclaredMethods()) {
                 if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
@@ -73,13 +70,21 @@ public class JSONParser {
             }
             throw new IllegalArgumentException(request.getCompletion().toString());
         } catch (Exception ex) {
-            ex.printStackTrace();
             lgr.debug(String.valueOf(ex));
             switch (request.getCompletion()) {
                 case FUTURE -> request.getAsync().getFuture().completeExceptionally(ex);
                 case CALLBACK -> request.getAsync().getConsumer().fail(ex);
                 default -> throw new RuntimeException("Unexpected completion type");
             }
+        }
+    }
+
+    private static void checkResponse(@NotNull Response response) throws LoginException {
+        if (!response.isSuccessful()) {
+            if (response.code() == 401) {
+                throw new LoginException("Failed to login because the token used to access the API was invalid.");
+            }
+            throw new RuntimeException("Request failed: Code " + response.code() + ": " + response.message());
         }
     }
 

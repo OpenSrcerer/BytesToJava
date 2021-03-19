@@ -5,8 +5,10 @@ import github.opensrcerer.requestEntities.BTJReturnable;
 import github.opensrcerer.requests.BTJRequest;
 import okhttp3.Response;
 
+import javax.security.auth.login.LoginException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public final class BTJQueue {
@@ -22,18 +24,19 @@ public final class BTJQueue {
     private final ExecutorService executor;
 
     /**
+     * The ratelimiter for this queue.
+     */
+    private final BTJRatelimiter ratelimiter;
+
+    /**
      * Queue for BTJRequests.
      */
     private final LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> requests = new LinkedBlockingQueue<>();
 
-    /**
-     * Boolean condition that signifies whether the queue is currently falling back until next reset to prevent ratelimiting.
-     */
-    private boolean fallback = false;
-
-    public BTJQueue(BTJ btj, ExecutorService executor) {
+    public BTJQueue(BTJ btj, ExecutorService executor, ScheduledExecutorService scheduledExecutor) throws LoginException {
         this.btj = btj;
         this.executor = executor;
+        this.ratelimiter = new BTJRatelimiter(btj, scheduledExecutor);
 
         // Runnable to execute while spinning
         Runnable drainQueue = () -> {
@@ -104,12 +107,5 @@ public final class BTJQueue {
         } catch (InterruptedException ex) {
             btj.getLogger().warn("Request queue interrupted while waiting to insert Request!");
         }
-    }
-
-    /**
-     * @return Whether the request queue is currently awaiting until next reset to request.
-     */
-    public boolean isFallback() {
-        return fallback;
     }
 }
