@@ -3,12 +3,13 @@ package github.opensrcerer.util;
 import github.opensrcerer.BTJ;
 import github.opensrcerer.requestEntities.TokenInfo;
 
-import javax.security.auth.login.LoginException;
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Prevents the user from blocking their token by executing too many requests.
@@ -25,75 +26,83 @@ public class BTJRatelimiter {
     private final ScheduledExecutorService scheduledExecutor;
 
     /**
+     * Thread queue for worker threads that are awaiting for the fallback timer to end.
+     */
+    private final Queue<Thread> waiters = new ConcurrentLinkedQueue<>();
+
+    /**
      * An AtomicInteger that carries the number of requests made to the BTB API for rate limit check purposes.
      */
     private final AtomicInteger uses = new AtomicInteger(0);
 
     /**
-     * Boolean condition that signifies whether the queue is currently falling back until next reset to prevent rate limiting.
+     * An AtomicInteger that carries the time until the next use reset for the BTB API.
      */
-    private final AtomicBoolean fallback = new AtomicBoolean(false);
+    private final AtomicInteger nextReset = new AtomicInteger(0);
 
     /**
-     * Future that will contain the scheduled action
+     * Array that contains worker BTJRunnables.
      */
-    private final ScheduledFuture<?> future;
+    private BTJRunnable[] runnables;
 
-    /**
-     * Object that carries information about the current token.
-     */
-    private TokenInfo tokenInfo;
 
-    public BTJRatelimiter(BTJ btj, ScheduledExecutorService scheduledExecutor) throws LoginException {
+    public BTJRatelimiter(BTJ btj, ScheduledExecutorService scheduledExecutor) {
         this.btj = btj;
         this.scheduledExecutor = scheduledExecutor;
-        syncTokenInfo();
-
-        Runnable r = () -> {
-            uses.set(0);
-            fallback.set(false);
-        };
-
-        future = this.scheduledExecutor.scheduleAtFixedRate(r, tokenInfo.getNextReset(), 60, TimeUnit.SECONDS);
     }
 
     /**
      * Increments the number of performed requests.
      */
-    public synchronized void incrementContinue() {
+    public synchronized void incrementUses(Endpoint endpoint) {
+        // Do not increment INFO calls as they do not increase the use counter
+        if (endpoint.equals(Endpoint.INFO)) {
+            return;
+        }
+
         int u = uses.incrementAndGet();
-        System.out.println("Total uses: " + uses.get());
+        System.out.println("Total uses: " + u);
 
         if (u >= 19) {
-            fallback.set(true);
-            System.out.println("Falling Back - " + uses.get());
+            syncTokenInfo();
+            System.out.println("Threads parked - Uses: " + u + " Fallback time: " + nextReset.get() * 1000);
+            Arrays.stream(runnables).forEach(BTJRunnable::park); // Flag all runnables
+
+            scheduledExecutor.schedule(() -> {
+                Arrays.stream(runnables).forEach(BTJRunnable::unpark); // Unflag all runnables
+
+                uses.set(0); // Reset uses
+                // Unparks all waiting threads
+                while (true) {
+                    Thread thread = waiters.poll();
+                    if (thread == null) {
+                        break;
+                    }
+                    System.out.println("Thread unparked - " + thread.getName());
+                    LockSupport.unpark(thread);
+                }
+            }, (nextReset.get() + 1) /*One second added to prevent time drifts*/ * 1000L, TimeUnit.MILLISECONDS);
         }
-    }
-
-    /**
-     * @return Whether the request queue should fallback.
-     */
-    public boolean fallback() {
-        return fallback.get();
-    }
-
-    /**
-     * @return For how long the queue should fall back (in ms).
-     */
-    public long getFallbackTime() {
-        return future.getDelay(TimeUnit.MILLISECONDS);
     }
 
     /**
      * Updates the TokenInfo instance.
-     * @throws LoginException If unable to log in to the API.
      */
-    public void syncTokenInfo() throws LoginException {
-        try {
-            tokenInfo = btj.getInfo().complete();
-            uses.set(tokenInfo.getUses());
-        } catch (Exception ex) {
-            throw new LoginException("Unable to access the API: " + ex);
-        }
+    public void syncTokenInfo() {
+        // Object that carries information about the current token.
+        TokenInfo tokenInfo = btj.getInfo().complete();
+        nextReset.set(tokenInfo.getNextReset());
+    }
+
+    /**
+     * Method to be called by worker threads before they are about
+     * to be parked on the queue.
+     */
+    public void addAwaiting() {
+        this.waiters.add(Thread.currentThread());
+    }
+
+    public void setWorkers(BTJRunnable... workers) {
+        this.runnables = workers;
     }
 }

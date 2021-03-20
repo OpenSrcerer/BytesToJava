@@ -8,13 +8,14 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jetbrains.annotations.Contract
 import org.slf4j.LoggerFactory
+import java.lang.Exception
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadFactory
 import javax.security.auth.login.LoginException
+import kotlin.Throws
 import kotlin.collections.ArrayList
-import kotlin.jvm.Throws
 
 /**
  * The implementation class for the BytesToJava API wrapper.
@@ -51,6 +52,7 @@ class BTJImpl : BTJ {
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
         requests = BTJQueue(this, twinScheduledExec, singleScheduledExec)
+        testConnection()
         lgr.debug("Finished init!")
     }
 
@@ -67,7 +69,21 @@ class BTJImpl : BTJ {
         client = OkHttpClient().newBuilder().build()
         builder = RequestBuilder(this, token) // Create a new RequestBuilder with given token
         requests = BTJQueue(this, executor, singleScheduledExec)
+        testConnection()
         lgr.debug("Finished init!")
+    }
+
+    /**
+     * Updates the TokenInfo instance.
+     * @throws LoginException If unable to log in to the API.
+     */
+    @Throws(LoginException::class)
+    fun testConnection() {
+        try {
+            info.complete()
+        } catch (ex: Exception) {
+            throw LoginException("Unable to access the API: $ex")
+        }
     }
 
     /**
