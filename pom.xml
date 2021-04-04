@@ -9,7 +9,7 @@
     <version>0.0.1</version>
 
     <name>BytesToJava</name>
-    <description>This is an API wrapper for the BytesToBits API written in Java and Kotlin.</description>
+    <description>An API wrapper for the BytesToBits API written in Java and Kotlin.</description>
     <url>https://github.com/OpenSrcerer/bytestojava</url>
 
     <licenses>
@@ -40,7 +40,8 @@
                 </executions>
                 <configuration>
                     <executable>maven</executable>
-                    <mainClass>github.opensrcerer.test</mainClass>
+                    <mainClass>personal.opensrcerer.Test</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
 
@@ -76,10 +77,15 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>compile</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <source>src</source>
+                            </sourceDirs>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>test-compile</id>
@@ -119,15 +125,15 @@
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <artifactId>kotlin-test</artifactId>
             <version>${kotlin.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -136,6 +142,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <kotlin.version>1.5.0-M1</kotlin.version>
+        <kotlin.version>1.5.0-M2</kotlin.version>
     </properties>
 </project>
