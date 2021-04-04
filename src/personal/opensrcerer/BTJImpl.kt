@@ -193,4 +193,8 @@ class BTJImpl : BTJ {
         }
         return RedditPostsRequest(this, subreddit, limit)
     }
+
+    override fun getDelay(): Long {
+        return requests.delay
+    }
 }

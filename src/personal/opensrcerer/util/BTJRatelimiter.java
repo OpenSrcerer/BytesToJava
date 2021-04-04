@@ -3,112 +3,62 @@ package personal.opensrcerer.util;
 import personal.opensrcerer.BTJ;
 import personal.opensrcerer.requestEntities.TokenInfo;
 
-import java.util.Arrays;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * Prevents the user from blocking their token by executing too many requests.
  */
 public class BTJRatelimiter {
     /**
-     * The BTJ instance that manages this ratelimiter.
+     * Used to block the queue and control requests as so they do not exceed the rate-limit quota.
      */
-    private final BTJ btj;
+    private final Semaphore semaphore;
 
     /**
-     * A scheduled executor that is used to manage the API timer reset.
+     * The number of requests it takes for the API to rate-limit the given token.
      */
-    private final ScheduledExecutorService scheduledExecutor;
+    private final int rateLimitValue;
 
-    /**
-     * Thread queue for worker threads that are awaiting for the fallback timer to end.
-     */
-    private final Queue<Thread> waiters = new ConcurrentLinkedQueue<>();
-
-    /**
-     * A Semaphore used to block the queue and control requests as so they do not exceed the ratelimit quota.
-     */
-    private final Semaphore semaphore = new Semaphore(50);
-
-    /**
-     * An AtomicInteger that carries the number of requests made to the BTB API for rate limit check purposes.
-     */
-    private final AtomicInteger uses = new AtomicInteger(0);
-
-    /**
-     * An AtomicInteger that carries the time until the next use reset for the BTB API.
-     */
-    private final AtomicInteger nextReset = new AtomicInteger(0);
-
-    /**
-     * Array that contains worker BTJRunnables.
-     */
-    private BTJRunnable[] runnables;
-
+    private final ScheduledFuture<?> future;
 
     public BTJRatelimiter(BTJ btj, ScheduledExecutorService scheduledExecutor) {
-        this.btj = btj;
-        this.scheduledExecutor = scheduledExecutor;
+        TokenInfo info = btj.getInfo().complete();
+
+        // Save the ratelimit value
+        rateLimitValue = info.getLimit();
+
+        // Initialize fair semaphore with available permits equal to the remaining uses on the API
+        semaphore = new Semaphore(rateLimitValue - info.getUses(), true);
+
+        // Schedule action to reset semaphore permits
+        future = scheduledExecutor.scheduleAtFixedRate(this::resetPermits,
+                info.getNextReset() + 1, // Time until current next reset, offset by 1 to make sure API reset
+                61, // For every other reset: Every minute
+                TimeUnit.SECONDS);
     }
 
     /**
-     * Increments the number of performed requests.
+     * Acquires a permit synchronously from the semaphore if the given endpoint is ratelimited.
+     * @throws InterruptedException If the thread was interrupted while waiting.
      */
-    public synchronized void incrementUses(Endpoint endpoint) {
-        // Do not increment INFO calls as they do not increase the use counter
-        if (endpoint.equals(Endpoint.INFO)) {
-            return;
+    public synchronized int acquirePermit(Endpoint endpoint) throws InterruptedException {
+        if (!endpoint.equals(Endpoint.INFO)) {
+            semaphore.acquire();
         }
-
-        int u = uses.incrementAndGet();
-        System.out.println("Total uses: " + u);
-
-        if (u >= 19) {
-            syncTokenInfo();
-            System.out.println("Threads parked - Uses: " + u + " Fallback time: " + nextReset.get() * 1000);
-            Arrays.stream(runnables).forEach(BTJRunnable::park); // Flag all runnables
-
-            scheduledExecutor.schedule(() -> {
-                Arrays.stream(runnables).forEach(BTJRunnable::unpark); // Unflag all runnables
-
-                uses.set(0); // Reset uses
-                // Unparks all waiting threads
-                while (true) {
-                    Thread thread = waiters.poll();
-                    if (thread == null) {
-                        break;
-                    }
-                    System.out.println("Thread unparked - " + thread.getName());
-                    LockSupport.unpark(thread);
-                }
-            }, (nextReset.get() + 1) /*One second added to prevent time drifts*/ * 1000L, TimeUnit.MILLISECONDS);
-        }
+        return semaphore.availablePermits();
     }
 
     /**
-     * Updates the TokenInfo instance.
+     * Releases enough permits in the semaphore to equal the token limit.
      */
-    public void syncTokenInfo() {
-        // Object that carries information about the current token.
-        TokenInfo tokenInfo = btj.getInfo().complete();
-        nextReset.set(tokenInfo.getNextReset());
+    private void resetPermits() {
+        semaphore.release(rateLimitValue - semaphore.availablePermits()); // Release the previously-consumed permits
     }
 
-    /**
-     * Method to be called by worker threads before they are about
-     * to be parked on the queue.
-     */
-    public void addAwaiting() {
-        this.waiters.add(Thread.currentThread());
-    }
-
-    public void setWorkers(BTJRunnable... workers) {
-        this.runnables = workers;
+    public long getDelay() {
+        return future.getDelay(TimeUnit.MILLISECONDS);
     }
 }

@@ -166,4 +166,6 @@ public interface BTJ {
     @NotNull
     @Contract("null, _ -> fail")
     BTJRequest<personal.opensrcerer.requestEntities.RedditPosts> getRedditPosts(String subreddit, int limit);
+
+    long getDelay();
 }
