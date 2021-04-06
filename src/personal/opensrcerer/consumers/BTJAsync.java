@@ -1,7 +1,7 @@
-package personal.opensrcerer.consumers;
+package opensrcerer.consumers;
 
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.requests.BTJRequest;
+import opensrcerer.requestEntities.BTJReturnable;
+import opensrcerer.requests.BTJRequest;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;

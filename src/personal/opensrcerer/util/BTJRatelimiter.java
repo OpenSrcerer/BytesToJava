@@ -1,7 +1,7 @@
-package personal.opensrcerer.util;
+package opensrcerer.util;
 
-import personal.opensrcerer.BTJ;
-import personal.opensrcerer.requestEntities.TokenInfo;
+import opensrcerer.BTJ;
+import opensrcerer.requestEntities.TokenInfo;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;

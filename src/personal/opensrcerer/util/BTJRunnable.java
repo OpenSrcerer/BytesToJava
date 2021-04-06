@@ -1,11 +1,11 @@
-package personal.opensrcerer.util;
+package opensrcerer.util;
 
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import personal.opensrcerer.BTJ;
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.requests.BTJRequest;
+import opensrcerer.BTJ;
+import opensrcerer.requestEntities.BTJReturnable;
+import opensrcerer.requests.BTJRequest;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;

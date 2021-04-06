@@ -1,8 +1,8 @@
-package personal.opensrcerer.util;
+package opensrcerer.util;
 
-import personal.opensrcerer.BTJ;
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.requests.BTJRequest;
+import opensrcerer.BTJ;
+import opensrcerer.requestEntities.BTJReturnable;
+import opensrcerer.requests.BTJRequest;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;

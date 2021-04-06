@@ -1,12 +1,12 @@
-package personal.opensrcerer.util;
+package opensrcerer.util;
 
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import org.jetbrains.annotations.Nullable;
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.requests.BTJRequest;
-import personal.opensrcerer.requests.LyricsRequest;
-import personal.opensrcerer.requests.RedditPostsRequest;
+import opensrcerer.requestEntities.BTJReturnable;
+import opensrcerer.requests.BTJRequest;
+import opensrcerer.requests.LyricsRequest;
+import opensrcerer.requests.RedditPostsRequest;
 
 import java.util.Objects;
 

@@ -1,4 +1,4 @@
-package personal.opensrcerer.requestEntities
+package opensrcerer.requestEntities
 
 /**
  * Marks all objects that can be returned from a BTJRequest.

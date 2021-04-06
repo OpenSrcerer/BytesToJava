@@ -1,11 +1,11 @@
-package personal.opensrcerer.requests;
+package opensrcerer.requests;
 
-import personal.opensrcerer.BTJ;
-import personal.opensrcerer.consumers.BTJAsync;
-import personal.opensrcerer.requestEntities.RedditMeme;
-import personal.opensrcerer.util.CompletionType;
-import personal.opensrcerer.util.Endpoint;
-import personal.opensrcerer.util.JSONParser;
+import opensrcerer.BTJ;
+import opensrcerer.consumers.BTJAsync;
+import opensrcerer.requestEntities.RedditMeme;
+import opensrcerer.util.CompletionType;
+import opensrcerer.util.Endpoint;
+import opensrcerer.util.JSONParser;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 

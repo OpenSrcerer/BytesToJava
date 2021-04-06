@@ -1,4 +1,4 @@
-package personal.opensrcerer.requestEntities;
+package opensrcerer.requestEntities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

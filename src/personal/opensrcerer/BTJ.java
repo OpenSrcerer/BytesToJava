@@ -1,15 +1,13 @@
-package personal.opensrcerer;
+package opensrcerer;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.requestEntities.RandomText;
-import personal.opensrcerer.requestEntities.RandomWord;
-import personal.opensrcerer.requestEntities.TokenInfo;
-import personal.opensrcerer.requests.BTJRequest;
+import opensrcerer.requestEntities.*;
+import opensrcerer.requests.BTJRequest;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
@@ -90,6 +88,7 @@ public interface BTJ {
      *         about your token from the BTB API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     BTJRequest<TokenInfo> getInfo();
 
@@ -98,6 +97,7 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     BTJRequest<RandomWord> getWord();
 
@@ -106,6 +106,7 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     BTJRequest<RandomText> getText();
 
@@ -114,16 +115,18 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
-    BTJRequest<personal.opensrcerer.requestEntities.MadLib> getMadLib();
+    BTJRequest<MadLib> getMadLib();
 
     /**
      * @return A BTJRequest that will be executed to retrieve a random Meme from the
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
-    BTJRequest<personal.opensrcerer.requestEntities.RedditMeme> getMeme();
+    BTJRequest<RedditMeme> getMeme();
 
     /**
      * @param song The name of the song to look for.
@@ -131,9 +134,10 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     @Contract("null -> fail")
-    BTJRequest<personal.opensrcerer.requestEntities.SongLyrics> getLyrics(String song);
+    BTJRequest<SongLyrics> getLyrics(String song);
 
     /**
      * @param song The name of the song to look for.
@@ -142,9 +146,10 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest<personal.opensrcerer.requestEntities.SongLyrics> getLyrics(String song, String artist);
+    BTJRequest<SongLyrics> getLyrics(String song, String artist);
 
     /**
      * @param subreddit Subreddit to retrieve from.
@@ -152,9 +157,10 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     @Contract("null -> fail")
-    BTJRequest<personal.opensrcerer.requestEntities.RedditPosts> getRedditPosts(String subreddit);
+    BTJRequest<RedditPosts> getRedditPosts(String subreddit);
 
     /**
      * @param subreddit Subreddit to retrieve from.
@@ -163,9 +169,10 @@ public interface BTJ {
      *         BytesToBits API.
      *         Can be executed using .queue(), .submit() or .complete().
      */
+    @CheckReturnValue
     @NotNull
     @Contract("null, _ -> fail")
-    BTJRequest<personal.opensrcerer.requestEntities.RedditPosts> getRedditPosts(String subreddit, int limit);
+    BTJRequest<RedditPosts> getRedditPosts(String subreddit, int limit);
 
     long getDelay();
 }

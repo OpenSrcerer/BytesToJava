@@ -1,4 +1,4 @@
-package personal.opensrcerer.util;
+package opensrcerer.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import personal.opensrcerer.requestEntities.*;
-import personal.opensrcerer.requests.BTJRequest;
+import opensrcerer.requestEntities.*;
+import opensrcerer.requests.BTJRequest;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;

@@ -1,13 +1,13 @@
-package personal.opensrcerer
+package opensrcerer
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jetbrains.annotations.Contract
 import org.slf4j.LoggerFactory
-import personal.opensrcerer.requestEntities.*
-import personal.opensrcerer.requests.*
-import personal.opensrcerer.util.BTJQueue
-import personal.opensrcerer.util.RequestBuilder
+import opensrcerer.requestEntities.*
+import opensrcerer.requests.*
+import opensrcerer.util.BTJQueue
+import opensrcerer.util.RequestBuilder
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService

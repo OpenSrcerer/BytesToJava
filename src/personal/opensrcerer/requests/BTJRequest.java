@@ -1,12 +1,13 @@
-package personal.opensrcerer.requests;
+package opensrcerer.requests;
 
-import personal.opensrcerer.consumers.BTJAsync;
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.util.CompletionType;
-import personal.opensrcerer.util.Endpoint;
+import com.google.errorprone.annotations.CheckReturnValue;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import opensrcerer.consumers.BTJAsync;
+import opensrcerer.requestEntities.BTJReturnable;
+import opensrcerer.util.CompletionType;
+import opensrcerer.util.Endpoint;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -38,7 +39,9 @@ public interface BTJRequest<X extends BTJReturnable> {
      * Complete a request asynchronously.
      * @return A CompletableFuture that encapsulates the requested data.
      */
-    @NotNull CompletableFuture<X> submit();
+    @CheckReturnValue
+    @NotNull
+    CompletableFuture<X> submit();
 
     // ***************************************************************
     // **                       SYNCHRONOUS                         **
@@ -48,6 +51,7 @@ public interface BTJRequest<X extends BTJReturnable> {
      * Block this thread until the request is completed.
      * @return The completed request.
      */
+    @CheckReturnValue
     @NotNull
     X complete();
 
@@ -58,7 +62,8 @@ public interface BTJRequest<X extends BTJReturnable> {
     /**
      * @return The OkHttp Request of this BTJRequest.
      */
-    @NotNull Request getRequest();
+    @NotNull
+    Request getRequest();
 
     /**
      * Return the BTJAsync object of this BTJRequest.

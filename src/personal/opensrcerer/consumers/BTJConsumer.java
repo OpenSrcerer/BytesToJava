@@ -1,8 +1,8 @@
-package personal.opensrcerer.consumers;
+package opensrcerer.consumers;
 
-import personal.opensrcerer.requestEntities.BTJReturnable;
-import personal.opensrcerer.requests.BTJRequest;
-import personal.opensrcerer.util.JSONParser;
+import opensrcerer.requestEntities.BTJReturnable;
+import opensrcerer.requests.BTJRequest;
+import opensrcerer.util.JSONParser;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
