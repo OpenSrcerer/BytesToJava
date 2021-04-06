@@ -2,7 +2,7 @@ language: java
 os: linux
 dist: xenial
 jdk:
-- oraclejdk9
+- openjdk-ea
 script: mvn clean verify
 after_success:
 - bash <(curl -s https://codecov.io/bash)

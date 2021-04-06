@@ -56,7 +56,7 @@ public class BTJRunnable implements Runnable {
                 lgr.debug("Took Permit! Remaining: " + ratelimiter.acquirePermit(request.getEndpoint())); // Acquire a permit from the ratelimiter (blocks thread)
 
                 switch (request.getCompletion()) { // Identify Request completion type and init
-                    case FUTURE: {
+                    case FUTURE -> {
                         try {
                             // Await synchronous response
                             Response response = btj.getClient().newCall(request.getRequest()).execute();
@@ -67,14 +67,10 @@ public class BTJRunnable implements Runnable {
                             btj.getLogger().debug("Received exception for Request of type " + CompletionType.FUTURE.name());
                             request.getAsync().getFuture().completeExceptionally(ex);
                         }
-                        break;
                     }
                     // Dispatch async call to the OkHttpClient dispatcher
-                    case CALLBACK:
-                        btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
-                        break;
-                    default:
-                        throw new RuntimeException("Invalid Request type in queue");
+                    case CALLBACK -> btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
+                    default -> throw new RuntimeException("Invalid Request type in queue");
                 }
 
                 if (executor.isShutdown()) { // Exit if the executor was shutdown
