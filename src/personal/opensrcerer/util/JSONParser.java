@@ -62,8 +62,12 @@ public class JSONParser {
                 if (m.getName().equals(request.getEndpoint().getDeclaredMethod())) {
                     X returnable = (X) m.invoke(null, JSONBody);
                     switch (request.getCompletion()) {
-                        case FUTURE -> request.getAsync().getFuture().complete(returnable);
-                        case CALLBACK -> request.getAsync().getConsumer().succeed(returnable);
+                        case FUTURE:
+                            request.getAsync().getFuture().complete(returnable);
+                            break;
+                        case CALLBACK:
+                            request.getAsync().getConsumer().succeed(returnable);
+                            break;
                     }
                     return;
                 }
@@ -72,9 +76,13 @@ public class JSONParser {
         } catch (Exception ex) {
             lgr.debug(String.valueOf(ex));
             switch (request.getCompletion()) {
-                case FUTURE -> request.getAsync().getFuture().completeExceptionally(ex);
-                case CALLBACK -> request.getAsync().getConsumer().fail(ex);
-                default -> throw new RuntimeException("Unexpected completion type");
+                case FUTURE:
+                    request.getAsync().getFuture().completeExceptionally(ex);
+                    break;
+                case CALLBACK:
+                    request.getAsync().getConsumer().fail(ex);
+                    break;
+                default: throw new RuntimeException("Unexpected completion type");
             }
         }
     }

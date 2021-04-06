@@ -85,11 +85,19 @@ public class Tester {
         if (requestMethods.isEmpty()) {
             for (Method m : btj.getClass().getDeclaredMethods()) {
                 switch (m.getName()) {
-                    case "getInfo", "getWord", "getText", "getMadLib", "getMeme" -> requestMethods.add(m);
-                    case "getLyrics", "getRedditPosts" -> {
+                    case "getInfo":
+                    case "getMadLib":
+                    case "getWord":
+                    case "getText":
+                    case "getMeme":
+                        requestMethods.add(m);
+                        break;
+                    case "getLyrics":
+                    case "getRedditPosts": {
                         if (m.getParameterCount() == 1) {
                             requestMethods.add(m); // Only add method overrides with one argument
                         }
+                        break;
                     }
                 }
             }
