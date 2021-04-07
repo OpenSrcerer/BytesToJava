@@ -37,7 +37,7 @@ public class Tester {
     /**
      * Number of calls that the BTJ Client has made.
      */
-    private int callsmade = 0;
+    private static final int callsmade = 6;
 
     @Test
     public void test() {
@@ -47,13 +47,20 @@ public class Tester {
             BTJ btj = BTJ.getBTJ(token); // Initialize BTJ with Token
 
             // Asynchronous callbacks
-            for (int index = 0; index < 8; ++index) {
+            for (int index = 0; index < 2; ++index) {
                 getRandomRequest(btj).queue(randomText -> callsReceived.incrementAndGet()); // Async callback
-                ++callsmade;
+            }
+            // Asynchronous future calls
+            for (int index = 0; index < 2; ++index) {
+                getRandomRequest(btj).submit().thenAccept(madLib -> callsReceived.incrementAndGet());
+            }
+            // Synchronous calls
+            for (int index = 0; index < 2; ++index) {
+                getRandomRequest(btj).complete();
+                callsReceived.incrementAndGet();
             }
 
             Thread.sleep(10000); // Wait an adequate amount of time for async requests to finish
-
         } catch (Exception ex) {
             lgr.error("Some issue occurred:", ex);
         }
