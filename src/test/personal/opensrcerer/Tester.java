@@ -41,26 +41,33 @@ public class Tester {
 
     @Test
     public void test() {
-        String token = System.getenv("BYTESTOBITS_TOKEN"); // Retrieve bytestobits token from envs
+        // String token = System.getenv("BYTESTOBITS_TOKEN"); // Retrieve bytestobits token from envs
 
         try {
-            BTJ btj = BTJ.getBTJ(token); // Initialize BTJ with Token
+            BTJ btj = BTJ.getBTJ("scBf.BsB3qzZl1WQJpAgH6gk2"); // Initialize BTJ with Token
 
             // Asynchronous callbacks
             for (int index = 0; index < 2; ++index) {
-                getRandomRequest(btj).queue(randomText -> callsReceived.incrementAndGet()); // Async callback
+                getRandomRequest(btj).queue(randomText -> {
+                    callsReceived.incrementAndGet();
+                    lgr.debug("Callback complete!");
+                });
             }
             // Asynchronous future calls
             for (int index = 0; index < 2; ++index) {
-                getRandomRequest(btj).submit().thenAccept(madLib -> callsReceived.incrementAndGet());
+                getRandomRequest(btj).submit().thenAccept(madLib -> {
+                    callsReceived.incrementAndGet();
+                    lgr.debug("Asynchronous call complete!");
+                });
             }
             // Synchronous calls
             for (int index = 0; index < 2; ++index) {
                 getRandomRequest(btj).complete();
                 callsReceived.incrementAndGet();
+                lgr.debug("Synchronous call complete!");
             }
 
-            Thread.sleep(10000); // Wait an adequate amount of time for async requests to finish
+            Thread.sleep(5000); // Wait an adequate amount of time for async requests to finish
         } catch (Exception ex) {
             lgr.error("Some issue occurred:", ex);
         }
