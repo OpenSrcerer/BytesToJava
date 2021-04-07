@@ -1,9 +1,5 @@
 language: java
 
-jdk:
-  - openjdk15
-  - openjdk16
-
 env:
   global:
     - MAVEN_OPTS=--illegal-access=permit
@@ -12,13 +8,22 @@ env:
 
 jobs:
   include:
-    - name: "Linux Tests"
+    - name: "AMD64/15"
       os: linux
-      arch:
-        - amd64
-        - arm64
-        - ppc64le
-        - s390x
+      jdk: openjdk15
+      arch: amd64
+    - name: "ARM64/15"
+      os: linux
+      jdk: openjdk15
+      arch: arm64
+    - name: "AMD64/16"
+      os: linux
+      jdk: openjdk16
+      arch: amd64
+    - name: "ARM64/16"
+      os: linux
+      jdk: openjdk16
+      arch: arm64
 
 script: mvn clean verify
 
