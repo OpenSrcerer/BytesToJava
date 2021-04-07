@@ -1,12 +1,12 @@
 package opensrcerer.requests;
 
-import opensrcerer.BTJ;
+import okhttp3.Request;
+import opensrcerer.BTJImpl;
 import opensrcerer.consumers.BTJAsync;
 import opensrcerer.requestEntities.TokenInfo;
 import opensrcerer.util.CompletionType;
 import opensrcerer.util.Endpoint;
 import opensrcerer.util.JSONParser;
-import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +17,7 @@ public final class InfoRequest implements BTJRequest<TokenInfo> {
     /**
      * The BTJ instance for this Request.
      */
-    private final BTJ btj;
+    private final BTJImpl btj;
 
     /**
      * The OkHttp Request of this BTJRequest.
@@ -34,7 +34,7 @@ public final class InfoRequest implements BTJRequest<TokenInfo> {
      */
     private CompletionType type;
 
-    public InfoRequest(BTJ btj) {
+    public InfoRequest(BTJImpl btj) {
         this.btj = btj;
         this.request = btj.getRequest(this);
     }

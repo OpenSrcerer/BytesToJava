@@ -1,12 +1,12 @@
 package opensrcerer.requests;
 
-import opensrcerer.BTJ;
+import okhttp3.Request;
+import opensrcerer.BTJImpl;
 import opensrcerer.consumers.BTJAsync;
 import opensrcerer.requestEntities.SongLyrics;
 import opensrcerer.util.CompletionType;
 import opensrcerer.util.Endpoint;
 import opensrcerer.util.JSONParser;
-import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +18,7 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
     /**
      * The BTJ instance for this Request.
      */
-    private final BTJ btj;
+    private final BTJImpl btj;
 
     /**
      * The OkHttp Request of this BTJRequest.
@@ -49,7 +49,7 @@ public final class LyricsRequest implements BTJRequest<SongLyrics> {
      */
     private final String artist;
 
-    public LyricsRequest(BTJ btj, String songName, @Nullable String artist) {
+    public LyricsRequest(BTJImpl btj, String songName, @Nullable String artist) {
         this.songName = songName;
         this.artist = artist;
         this.btj = btj;

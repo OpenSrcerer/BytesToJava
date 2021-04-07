@@ -1,12 +1,12 @@
 package opensrcerer.requests;
 
-import opensrcerer.BTJ;
+import okhttp3.Request;
+import opensrcerer.BTJImpl;
 import opensrcerer.consumers.BTJAsync;
 import opensrcerer.requestEntities.RedditPosts;
 import opensrcerer.util.CompletionType;
 import opensrcerer.util.Endpoint;
 import opensrcerer.util.JSONParser;
-import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +17,7 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
     /**
      * The BTJ instance for this Request.
      */
-    private final BTJ btj;
+    private final BTJImpl btj;
 
     /**
      * The OkHttp Request of this BTJRequest.
@@ -44,7 +44,7 @@ public final class RedditPostsRequest implements BTJRequest<RedditPosts> {
      */
     private final int limit;
 
-    public RedditPostsRequest(BTJ btj, String subreddit, int limit) {
+    public RedditPostsRequest(BTJImpl btj, String subreddit, int limit) {
         this.subreddit = subreddit;
         this.limit = limit;
         this.btj = btj;

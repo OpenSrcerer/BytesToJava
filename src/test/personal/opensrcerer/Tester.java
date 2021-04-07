@@ -37,7 +37,7 @@ public class Tester {
     /**
      * Number of calls that the BTJ Client has made.
      */
-    private static final int callsmade = 6;
+    private static final int callsmade = 3;
 
     @Test
     public void test() {
@@ -46,28 +46,24 @@ public class Tester {
         try {
             BTJ btj = BTJ.getBTJ(token); // Initialize BTJ with Token
 
-            // Asynchronous callbacks
-            for (int index = 0; index < 2; ++index) {
-                getRandomRequest(btj).queue(randomText -> {
-                    callsReceived.incrementAndGet();
-                    lgr.debug("Callback complete!");
-                });
-            }
-            // Asynchronous future calls
-            for (int index = 0; index < 2; ++index) {
-                getRandomRequest(btj).submit().thenAccept(madLib -> {
-                    callsReceived.incrementAndGet();
-                    lgr.debug("Asynchronous call complete!");
-                });
-            }
-            // Synchronous calls
-            for (int index = 0; index < 2; ++index) {
-                getRandomRequest(btj).complete();
+            // Asynchronous callback
+            getRandomRequest(btj).queue(randomText -> {
                 callsReceived.incrementAndGet();
-                lgr.debug("Synchronous call complete!");
-            }
+                lgr.debug("Callback complete!");
+            });
 
-            Thread.sleep(20000); // Wait an adequate amount of time for async requests to finish
+            // Asynchronous future call
+            getRandomRequest(btj).submit().thenAccept(madLib -> {
+                callsReceived.incrementAndGet();
+                lgr.debug("Asynchronous call complete!");
+            });
+
+            // Synchronous call
+            getRandomRequest(btj).complete();
+            callsReceived.incrementAndGet();
+            lgr.debug("Synchronous call complete!");
+
+            Thread.sleep(5000); // Wait an adequate amount of time for async requests to finish
         } catch (Exception ex) {
             lgr.error("Some issue occurred:", ex);
         }

@@ -1,13 +1,10 @@
 package opensrcerer;
 
 import com.google.errorprone.annotations.CheckReturnValue;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 import opensrcerer.requestEntities.*;
 import opensrcerer.requests.BTJRequest;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
@@ -44,30 +41,6 @@ public interface BTJ {
     // ***************************************************************
     // **                       INTERNAL                            **
     // ***************************************************************
-
-    /**
-     * Add a Request to the request queue.
-     * @param request BTJRequest to insert into the queue.
-     */
-    void invoke(BTJRequest<? extends BTJReturnable> request);
-
-    /**
-     * @return Logger of the BTJ instance.
-     */
-    Logger getLogger();
-
-    /**
-     * Create a new OkHttp request from a BTJRequest.
-     * @param request BTJRequest to use for creation.
-     */
-    @NotNull
-    Request getRequest(final BTJRequest<? extends BTJReturnable> request);
-
-    /**
-     * @return Return the OkHttpClient of this BTJ instance.
-     */
-    @NotNull
-    OkHttpClient getClient();
 
     /**
      * Shuts down this instance of BTJ.

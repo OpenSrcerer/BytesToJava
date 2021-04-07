@@ -1,11 +1,11 @@
 package opensrcerer.util;
 
 import okhttp3.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import opensrcerer.BTJ;
+import opensrcerer.BTJImpl;
 import opensrcerer.requestEntities.BTJReturnable;
 import opensrcerer.requests.BTJRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,7 +15,7 @@ public class BTJRunnable implements Runnable {
     /**
      * BTJ instance for this Queue.
      */
-    private final BTJ btj;
+    private final BTJImpl btj;
 
     /**
      * Pool of threads to drain requests queue.
@@ -37,7 +37,7 @@ public class BTJRunnable implements Runnable {
     /**
      * Create a new BTJRunnable with the given params.
      */
-    public BTJRunnable(BTJ btj, ScheduledExecutorService executor,
+    public BTJRunnable(BTJImpl btj, ScheduledExecutorService executor,
                        BTJRatelimiter ratelimiter, LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> queue) {
         this.btj = btj;
         this.executor = executor;
@@ -53,7 +53,7 @@ public class BTJRunnable implements Runnable {
             try {
                 final BTJRequest<? extends BTJReturnable> request = queue.take(); // Take a request from the request queue
 
-                ratelimiter.acquirePermit(request.getEndpoint()); // Acquire a permit from the ratelimiter (blocks thread)
+                lgr.debug("Permit acquired! : " + ratelimiter.acquirePermit(request.getEndpoint())); // Acquire a permit from the ratelimiter (blocks thread)
 
                 switch (request.getCompletion()) { // Identify Request completion type and init
                     case FUTURE -> {
@@ -70,7 +70,7 @@ public class BTJRunnable implements Runnable {
                     }
                     // Dispatch async call to the OkHttpClient dispatcher
                     case CALLBACK -> btj.getClient().newCall(request.getRequest()).enqueue(request.getAsync().getConsumer());
-                    default -> throw new RuntimeException("Invalid Request type in queue");
+                    default -> throw new RuntimeException("Invalid Request type in queue.");
                 }
 
                 if (executor.isShutdown()) { // Exit if the executor was shutdown

@@ -1,6 +1,6 @@
 package opensrcerer.util;
 
-import opensrcerer.BTJ;
+import opensrcerer.BTJImpl;
 import opensrcerer.requestEntities.BTJReturnable;
 import opensrcerer.requests.BTJRequest;
 
@@ -13,7 +13,7 @@ public final class BTJQueue {
     /**
      * BTJ instance for this Queue.
      */
-    private final BTJ btj;
+    private final BTJImpl btj;
 
     /**
      * Pool of threads to drain requests queue.
@@ -25,9 +25,12 @@ public final class BTJQueue {
      */
     private final LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> requests;
 
+    /**
+     * The Ratelimiter for this queue.
+     */
     private final BTJRatelimiter limiter;
 
-    public BTJQueue(BTJ btj, ScheduledExecutorService executor, ScheduledExecutorService scheduledExecutor) {
+    public BTJQueue(BTJImpl btj, ScheduledExecutorService executor, ScheduledExecutorService scheduledExecutor) {
         this.btj = btj;
         this.executor = executor;
         this.requests = new LinkedBlockingQueue<>();

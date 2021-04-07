@@ -134,21 +134,37 @@ class BTJImpl : BTJ {
             }
     }
 
-    // -----------------------------------------------
+    // ***************************************************************
+    // **                       INTERNAL                            **
+    // ***************************************************************
 
-    override fun invoke(request: BTJRequest<out BTJReturnable>) {
+    /**
+     * Add a Request to the request queue.
+     * @param request BTJRequest to insert into the queue.
+     */
+    fun invoke(request: BTJRequest<out BTJReturnable>) {
         requests.addRequest(request)
     }
 
-    override fun getLogger(): org.slf4j.Logger {
+    /**
+     * @return Logger of the BTJ instance.
+     */
+    fun getLogger(): org.slf4j.Logger {
         return lgr
     }
 
-    override fun getRequest(request: BTJRequest<out BTJReturnable>): Request {
+    /**
+     * Create a new OkHttp request from a BTJRequest.
+     * @param request BTJRequest to use for creation.
+     */
+    fun getRequest(request: BTJRequest<out BTJReturnable>): Request {
         return builder.createHttpRequest(request)
     }
 
-    override fun getClient(): OkHttpClient {
+    /**
+     * @return Return the OkHttpClient of this BTJ instance.
+     */
+    fun getClient(): OkHttpClient {
         return client
     }
 

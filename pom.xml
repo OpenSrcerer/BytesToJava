@@ -71,7 +71,6 @@
                 </executions>
                 <configuration>
                     <executable>maven</executable>
-                    <mainClass>personal.opensrcerer.Test</mainClass>
                     <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
