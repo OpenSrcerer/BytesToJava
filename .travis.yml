@@ -1,6 +1,8 @@
 language: java
-os: linux
-dist: xenial
+
+jdk:
+  - openjdk15
+  - openjdk16
 
 env:
   global:
@@ -10,18 +12,13 @@ env:
 
 jobs:
   include:
-    - name: "JDK 14 Tests"
-      jdk:
-        - openjdk14
-        - oraclejdk14
-    - name: "JDK 15 Tests"
-      jdk:
-        - openjdk15
-        - oraclejdk15
-    - name: "JDK 16 Tests"
-      jdk:
-        - openjdk16
-        - oraclejdk16
+    - name: "Linux Tests"
+      os: linux
+      arch:
+        - amd64
+        - arm64
+        - ppc64le
+        - s390x
 
 script: mvn clean verify
 
