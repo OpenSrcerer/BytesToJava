@@ -63,7 +63,7 @@ public class Tester {
                 callsReceived.incrementAndGet();
             }
 
-            Thread.sleep(5000); // Wait an adequate amount of time for async requests to finish
+            Thread.sleep(10000); // Wait an adequate amount of time for async requests to finish
 
         } catch (Exception ex) {
             lgr.error("Some issue occurred:", ex);
