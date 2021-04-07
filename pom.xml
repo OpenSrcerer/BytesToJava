@@ -28,6 +28,7 @@
         <sourceDirectory>${project.basedir}/src/personal</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/personal</testSourceDirectory>
         <defaultGoal>exec:java</defaultGoal>
+
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
