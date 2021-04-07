@@ -41,23 +41,23 @@ public class Tester {
 
     @Test
     public void test() {
-        String token = System.getenv("BYTESTOBITS_TOKEN"); // Retrieve bytestobits token from envs
+        // String token = System.getenv("BYTESTOBITS_TOKEN"); // Retrieve bytestobits token from envs
 
         try {
-            BTJ btj = BTJ.getBTJ(token); // Initialize BTJ with Token
+            BTJ btj = BTJ.getBTJ("scBf.BsB3qzZl1WQJpAgH6gk2"); // Initialize BTJ with Token
 
             // Asynchronous callbacks
-            for (int index = 0; index < 10; ++index) {
+            for (int index = 0; index < 8; ++index) {
                 getRandomRequest(btj).queue(randomText -> callsReceived.incrementAndGet()); // Async callback
                 ++callsmade;
             }
             // Asynchronous future calls
-            for (int index = 0; index < 10; ++index) {
+            for (int index = 0; index < 8; ++index) {
                 getRandomRequest(btj).submit().thenAccept(madLib -> callsReceived.incrementAndGet());
                 ++callsmade;
             }
             // Synchronous calls
-            for (int index = 0; index < 10; ++index) {
+            for (int index = 0; index < 4; ++index) {
                 getRandomRequest(btj).complete();
                 ++callsmade;
                 callsReceived.incrementAndGet();

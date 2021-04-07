@@ -53,7 +53,7 @@ public class BTJRunnable implements Runnable {
             try {
                 final BTJRequest<? extends BTJReturnable> request = queue.take(); // Take a request from the request queue
 
-                lgr.debug("Took Permit! Remaining: " + ratelimiter.acquirePermit(request.getEndpoint())); // Acquire a permit from the ratelimiter (blocks thread)
+                ratelimiter.acquirePermit(request.getEndpoint()); // Acquire a permit from the ratelimiter (blocks thread)
 
                 switch (request.getCompletion()) { // Identify Request completion type and init
                     case FUTURE -> {
