@@ -1,4 +1,2 @@
 jdk:
   - openjdk15
-env:
-  MAVEN_OPTS: "--illegal-access=permit"
