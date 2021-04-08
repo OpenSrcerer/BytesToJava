@@ -37,7 +37,7 @@ BytesToBits or BTB for short is an active community that revolves around softwar
 <dependency>
     <groupId>com.github.OpenSrcerer</groupId>
     <artifactId>BytesToJava</artifactId>
-    <version>-SNAPSHOT</version>
+    <version>0.0.1-ALPHA</version>
 </dependency>
 ```
 4. Refresh your changes. Well done, you can now start using BytesToJava.
@@ -56,7 +56,7 @@ allprojects {
 3. Add this dependency to your `build.gradle`:
 ```groovy
 dependencies {
-        implementation 'com.github.OpenSrcerer:BytesToJava:-SNAPSHOT'
+        implementation 'com.github.OpenSrcerer:BytesToJava:0.0.1-ALPHA'
 }
 ```
 4. Refresh your changes. Well done, you can now start using BytesToJava.
