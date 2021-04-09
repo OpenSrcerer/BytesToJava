@@ -4,56 +4,34 @@ import okhttp3.Response;
 import opensrcerer.BTJImpl;
 import opensrcerer.requestEntities.BTJReturnable;
 import opensrcerer.requests.BTJRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class BTJRunnable implements Runnable {
 
     /**
-     * BTJ instance for this Queue.
+     * BTJ instance for this worker.
      */
     private final BTJImpl btj;
 
     /**
-     * Pool of threads to drain requests queue.
+     * BTJ request queue..
      */
-    private final ScheduledExecutorService executor;
-
-    /**
-     * The ratelimiter for this worker.
-     */
-    private final BTJRatelimiter ratelimiter;
-
-    /**
-     * Queue for BTJRequests.
-     */
-    private final LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> queue;
-
-    private final Logger lgr = LoggerFactory.getLogger(this.getClass());
+    private final BTJQueue queue;
 
     /**
      * Create a new BTJRunnable with the given params.
      */
-    public BTJRunnable(BTJImpl btj, ScheduledExecutorService executor,
-                       BTJRatelimiter ratelimiter, LinkedBlockingQueue<BTJRequest<? extends BTJReturnable>> queue) {
+    public BTJRunnable(BTJImpl btj, BTJQueue queue) {
         this.btj = btj;
-        this.executor = executor;
-        this.ratelimiter = ratelimiter;
         this.queue = queue;
-
-        executor.submit(this);
     }
 
     @Override
     public void run() {
         while (true) {
             try {
-                final BTJRequest<? extends BTJReturnable> request = queue.take(); // Take a request from the request queue
+                final BTJRequest<? extends BTJReturnable> request = queue.takeRequest(); // Take a request from the request queue
 
-                lgr.debug("Permit acquired! : " + ratelimiter.acquirePermit(request.getEndpoint())); // Acquire a permit from the ratelimiter (blocks thread)
+                queue.checkExecution(); // Block before execution
 
                 switch (request.getCompletion()) { // Identify Request completion type and init
                     case FUTURE -> {
@@ -61,7 +39,7 @@ public class BTJRunnable implements Runnable {
                             // Await synchronous response
                             Response response = btj.getClient().newCall(request.getRequest()).execute();
                             btj.getLogger().debug("Received response for Request of type " + CompletionType.FUTURE.name());
-                            JSONParser.matchAsynchronous(request, response);
+                            BTJParser.matchAsynchronous(request, response);
                         } catch (Exception ex) {
                             // Exception handling, complete future exceptionally
                             btj.getLogger().debug("Received exception for Request of type " + CompletionType.FUTURE.name());
@@ -73,7 +51,7 @@ public class BTJRunnable implements Runnable {
                     default -> throw new RuntimeException("Invalid Request type in queue.");
                 }
 
-                if (executor.isShutdown()) { // Exit if the executor was shutdown
+                if (queue.getExecutor().isShutdown()) { // Exit if the executor was shutdown
                     btj.getLogger().debug(Thread.currentThread().getName() + " - Shutting down.");
                     return;
                 }

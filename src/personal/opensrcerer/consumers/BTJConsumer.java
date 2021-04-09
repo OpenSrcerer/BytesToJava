@@ -2,7 +2,7 @@ package opensrcerer.consumers;
 
 import opensrcerer.requestEntities.BTJReturnable;
 import opensrcerer.requests.BTJRequest;
-import opensrcerer.util.JSONParser;
+import opensrcerer.util.BTJParser;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * Represents an operation that takes in a BTJReturnable returned from an asynchronous source, and returns no value.
  */
-public final class BTJConsumer<X extends BTJReturnable> implements Callback {
+public class BTJConsumer<X extends BTJReturnable> implements Callback {
 
     /**
      * BTJRequest that created this Consumer.
@@ -67,7 +67,7 @@ public final class BTJConsumer<X extends BTJReturnable> implements Callback {
 
     @Override
     public void onResponse(@NotNull Call call, @NotNull Response response) {
-        JSONParser.matchAsynchronous(request, response);
+        BTJParser.matchAsynchronous(request, response);
     }
 
     @Override

@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory
 import opensrcerer.requestEntities.*
 import opensrcerer.requests.*
 import opensrcerer.util.BTJQueue
-import opensrcerer.util.RequestBuilder
+import opensrcerer.requests.BTJRequestBuilder
+import org.slf4j.Logger
 import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadFactory
@@ -18,12 +20,12 @@ import kotlin.collections.ArrayList
 /**
  * The implementation class for the BytesToJava API wrapper.
  */
-class BTJImpl : BTJ {
+internal class BTJImpl : BTJ {
 
     /**
      * Logger for this BTJ Instance.
      */
-    private val lgr: org.slf4j.Logger = LoggerFactory.getLogger(BTJ::class.java)
+    private val lgr: Logger = LoggerFactory.getLogger(BTJ::class.java)
 
     /**
      * Queue for all requests.
@@ -33,7 +35,7 @@ class BTJImpl : BTJ {
     /**
      * Request builder for all OkHttp requests associated with this BTJ instance.
      */
-    private val builder: RequestBuilder
+    private val builder: BTJRequestBuilder
 
     /**
      * Client that handles Requests for this BTJ instance.
@@ -46,11 +48,10 @@ class BTJImpl : BTJ {
      */
     @Throws(LoginException::class)
     constructor(token: String) {
-        lgr.debug("Constructing queue with default executor...")
+        lgr.debug("Initializing BTJ instance with default settings...")
         client = OkHttpClient().newBuilder().build()
-        builder = RequestBuilder(token) // Create a new RequestBuilder with given token
-        requests = BTJQueue(this, twinScheduledExec, singleScheduledExec)
-        testConnection()
+        builder = BTJRequestBuilder(token) // Create a new RequestBuilder with given token
+        requests = BTJQueue(this, twinExecutor, singleScheduledExec)
         lgr.debug("Finished init!")
     }
 
@@ -62,26 +63,12 @@ class BTJImpl : BTJ {
      *         BLOCKED as it is used to drain a LinkedBlockingQueue.
      */
     @Throws(LoginException::class)
-    constructor(token: String, executor: ScheduledExecutorService) {
-        lgr.debug("Initializing BTJ instance...")
+    constructor(token: String, executor: ExecutorService) {
+        lgr.debug("Initializing BTJ instance with custom executor...")
         client = OkHttpClient().newBuilder().build()
-        builder = RequestBuilder(token) // Create a new RequestBuilder with given token
+        builder = BTJRequestBuilder(token) // Create a new RequestBuilder with given token
         requests = BTJQueue(this, executor, singleScheduledExec)
-        testConnection()
         lgr.debug("Finished init!")
-    }
-
-    /**
-     * Updates the TokenInfo instance.
-     * @throws LoginException If unable to log in to the API.
-     */
-    @Throws(LoginException::class)
-    fun testConnection() {
-        try {
-            info.complete()
-        } catch (ex: Exception) {
-            throw LoginException("Unable to access the API: $ex")
-        }
     }
 
     /**
@@ -107,7 +94,7 @@ class BTJImpl : BTJ {
      * @return The default ScheduledExecutorService using a named ThreadFactory.
      */
     private companion object {
-        private val twinScheduledExec: ScheduledExecutorService
+        private val twinExecutor: ExecutorService
             get() {
                 val scheduledFactory: ThreadFactory = object : ThreadFactory {
                     private var counter = 1
@@ -117,7 +104,7 @@ class BTJImpl : BTJ {
                         return Thread(r, "BTJ-Requester-" + counter++)
                     }
                 }
-                return Executors.newScheduledThreadPool(2, scheduledFactory)
+                return Executors.newFixedThreadPool(2, scheduledFactory)
             }
 
         private val singleScheduledExec: ScheduledExecutorService
@@ -149,7 +136,7 @@ class BTJImpl : BTJ {
     /**
      * @return Logger of the BTJ instance.
      */
-    fun getLogger(): org.slf4j.Logger {
+    fun getLogger(): Logger {
         return lgr
     }
 
@@ -208,9 +195,5 @@ class BTJImpl : BTJ {
             throw IllegalArgumentException("Number of reddit posts to fetch must be between 1 and 50.")
         }
         return RedditPostsRequest(this, subreddit, limit)
-    }
-
-    override fun getDelay(): Long {
-        return requests.delay
     }
 }

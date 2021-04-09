@@ -6,7 +6,7 @@ import opensrcerer.consumers.BTJAsync;
 import opensrcerer.requestEntities.RandomText;
 import opensrcerer.util.CompletionType;
 import opensrcerer.util.Endpoint;
-import opensrcerer.util.JSONParser;
+import opensrcerer.util.BTJParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -71,7 +71,7 @@ public final class TextRequest implements BTJRequest<RandomText> {
     public RandomText complete() {
         type = CompletionType.SYNCHRONOUS;
         try {
-            return JSONParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
+            return BTJParser.matchSynchronous(this, btj.getClient().newCall(request).execute());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

@@ -1,23 +1,22 @@
-package opensrcerer.util;
+package opensrcerer.requests;
 
 import okhttp3.HttpUrl;
 import okhttp3.Request;
-import org.jetbrains.annotations.Nullable;
 import opensrcerer.requestEntities.BTJReturnable;
-import opensrcerer.requests.BTJRequest;
-import opensrcerer.requests.LyricsRequest;
-import opensrcerer.requests.RedditPostsRequest;
+import opensrcerer.util.Constants;
+import opensrcerer.util.Endpoint;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public final class RequestBuilder {
+public final class BTJRequestBuilder {
 
     /**
      * Token for the BTJ instance to create requests.
      */
     private final String token;
 
-    public RequestBuilder(String token) {
+    public BTJRequestBuilder(String token) {
         this.token = token;
     }
 

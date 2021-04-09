@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class BTJAsync<X extends BTJReturnable> {
+public class BTJAsync<X extends BTJReturnable> {
 
     /**
      * BTJConsumer in case of usage of .queue(). Handles callbacks.

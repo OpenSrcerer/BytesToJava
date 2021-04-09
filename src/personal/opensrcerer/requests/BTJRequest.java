@@ -2,12 +2,12 @@ package opensrcerer.requests;
 
 import com.google.errorprone.annotations.CheckReturnValue;
 import okhttp3.Request;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import opensrcerer.consumers.BTJAsync;
 import opensrcerer.requestEntities.BTJReturnable;
 import opensrcerer.util.CompletionType;
 import opensrcerer.util.Endpoint;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;

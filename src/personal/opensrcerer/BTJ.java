@@ -146,6 +146,4 @@ public interface BTJ {
     @NotNull
     @Contract("null, _ -> fail")
     BTJRequest<RedditPosts> getRedditPosts(String subreddit, int limit);
-
-    long getDelay();
 }
