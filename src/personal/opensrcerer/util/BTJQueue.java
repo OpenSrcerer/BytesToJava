@@ -108,6 +108,7 @@ public final class BTJQueue {
 
     /**
      * Check execution before request.
+     * @throws InterruptedException if thread was interrupted while waiting.
      */
     public void checkExecution() throws InterruptedException {
         synchronized (fallback) {
