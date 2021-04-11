@@ -31,11 +31,6 @@ public class BTJParser {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * The queue associated with this parser.
-     */
-    private static BTJQueue queue = null;
-
-    /**
      * Parses an OkHttp Response into a bean, then returns the constructed bean immediately.
      * @param request The originating request that issued a response.
      * @param response The response of the given request.
@@ -104,23 +99,13 @@ public class BTJParser {
      * @param response Given OkHttp response to check.
      * @throws LoginException If the token provided to access the API was invalid.
      */
-    private static void checkResponse(@NotNull Response response) throws Exception {
+    private static void checkResponse(@NotNull Response response) throws LoginException, RuntimeException {
         if (!response.isSuccessful()) {
             if (response.code() == 401) {
                 throw new LoginException("Failed to login because the token used to access the API was invalid.");
-            } else if (response.code() == 429) { // Rate limited, fall back
-                queue.fallback(); // Sets the queue in fallback mode.
             }
             throw new RuntimeException("Request failed: Code " + response.code() + " " + response.message());
         }
-    }
-
-    /**
-     * Setter for the queue reference of this class.
-     * @param queue Queue to set.
-     */
-    public static void setQueue(BTJQueue queue) {
-        BTJParser.queue = queue;
     }
 
     // ***************************************************************

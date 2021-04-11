@@ -31,8 +31,6 @@ public class BTJRunnable implements Runnable {
             try {
                 final BTJRequest<? extends BTJReturnable> request = queue.takeRequest(); // Take a request from the request queue
 
-                queue.checkExecution(); // Block before execution
-
                 switch (request.getCompletion()) { // Identify Request completion type and init
                     case FUTURE -> {
                         try {
