@@ -47,23 +47,30 @@ public class Tester {
             BTJ btj = BTJ.getBTJ(token); // Initialize BTJ with Token
 
             // Asynchronous callback
-            getRandomRequest(btj).queue(randomText -> {
-                callsReceived.incrementAndGet();
-                lgr.debug("Callback complete!");
-            });
+            for (int index = 0; index < 10; ++index) {
+                getRandomRequest(btj).queue(randomText -> {
+                    callsReceived.incrementAndGet();
+                    lgr.debug("Callback complete!");
+                });
+            }
+
 
             // Asynchronous future call
-            getRandomRequest(btj).submit().thenAccept(madLib -> {
-                callsReceived.incrementAndGet();
-                lgr.debug("Asynchronous call complete!");
-            });
+            for (int index = 0; index < 10; ++index) {
+                getRandomRequest(btj).submit().thenAccept(madLib -> {
+                    callsReceived.incrementAndGet();
+                    lgr.debug("Asynchronous call complete!");
+                });
+            }
 
             // Synchronous call
-            getRandomRequest(btj).complete();
-            callsReceived.incrementAndGet();
-            lgr.debug("Synchronous call complete!");
+            for (int index = 0; index < 10; ++index) {
+                getRandomRequest(btj).complete();
+                callsReceived.incrementAndGet();
+                lgr.debug("Synchronous call complete!");
+            }
 
-            Thread.sleep(5000); // Wait an adequate amount of time for async requests to finish
+            Thread.sleep(15000); // Wait an adequate amount of time for async requests to finish
         } catch (Exception ex) {
             lgr.error("Some issue occurred:", ex);
         }

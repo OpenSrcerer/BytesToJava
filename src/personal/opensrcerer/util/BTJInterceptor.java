@@ -1,6 +1,7 @@
 package opensrcerer.util;
 
 import okhttp3.Interceptor;
+import okhttp3.Request;
 import okhttp3.Response;
 import opensrcerer.BTJImpl;
 import opensrcerer.requestEntities.TokenInfo;
@@ -18,12 +19,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class BTJInterceptor implements Interceptor {
 
+    /**
+     * Interceptor's Logger.
+     */
     private static final Logger lgr = LoggerFactory.getLogger(BTJInterceptor.class);
 
     /**
      * Whether the chain is currently falling back. This value gets modified by a scheduled runnable.
      */
-    private final AtomicBoolean fallback;
+    private static final AtomicBoolean fallback = new AtomicBoolean(false);
 
     /**
      * Single-threaded executor used to assign a timed job in changing the fallback value.
@@ -39,7 +43,6 @@ public class BTJInterceptor implements Interceptor {
      * Create a new BTJInterceptor to manage the incoming requests.
      */
     public BTJInterceptor(BTJImpl btj, ScheduledExecutorService service) {
-        this.fallback = new AtomicBoolean(false);
         this.releaseScheduler = service;
         this.btj = btj;
     }
@@ -47,36 +50,44 @@ public class BTJInterceptor implements Interceptor {
     @NotNull
     @Override
     public Response intercept(@NotNull Chain chain) throws IOException {
-        Response original = chain.proceed(chain.request());
+        Request request = chain.request();
 
         // If request is from info endpoint, do not block
-        if (original.request().url().pathSegments().stream().anyMatch(s -> s.equals("info"))) {
-            return original;
+        if (request.url().pathSegments().stream().anyMatch(s -> s.equals("info"))) {
+            return chain.proceed(request); // execute request as usual
         }
 
+        synchronized (fallback) {
+            await();
+            Response response = chain.proceed(request); // Get the response from the request after awaiting
+
+            if (!response.isSuccessful() && response.code() == 429) { // Handle ratelimiting
+                TokenInfo info = btj.getInfo().complete(); // Make synchronous request to receive token info
+
+                lgr.debug("429 Received! Falling back for {} seconds", info.getNextReset());
+                fallback.compareAndSet(false, true); // Interceptor makes requests wait
+
+                releaseScheduler.schedule(() -> {
+                    synchronized (fallback) {
+                        fallback.compareAndSet(true, false);
+                        fallback.notifyAll(); // release interceptor
+                    }
+                }, info.getNextReset() + 1, TimeUnit.SECONDS); // 70s because API is currently not synced.
+
+                await();
+                response.close(); // Close the previous response
+                response = chain.proceed(request); // Retry request
+            }
+
+            return response; // Return the original response
+        }
+    }
+
+    public void await() {
         try { // await fallback if necessary
-            synchronized (fallback) {
-                while (fallback.get()) {
-                    fallback.wait();
-                }
+            while (fallback.get()) {
+                fallback.wait();
             }
         } catch (InterruptedException ignored) {}
-
-        if (!original.isSuccessful() && original.code() == 429) { // Handle return as normal
-            lgr.debug("429 Received! Currently falling back.");
-            TokenInfo info = btj.getInfo().complete(); // Make synchronous request to receive token info
-            fallback.set(true); // Interceptor makes requests wait
-
-            releaseScheduler.schedule(() -> {
-                fallback.set(false);
-                synchronized (fallback) {
-                    fallback.notifyAll(); // release interceptor
-                }
-            }, info.getNextReset() + 1, TimeUnit.SECONDS);
-
-            original = chain.proceed(chain.request());
-        }
-
-        return original;
     }
 }
