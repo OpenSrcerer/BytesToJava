@@ -37,7 +37,7 @@ public class Tester {
     /**
      * Number of calls that the BTJ Client has made.
      */
-    private static final int callsmade = 3;
+    private static final int callsmade = 15;
 
     @Test
     public void test() {
@@ -47,7 +47,7 @@ public class Tester {
             BTJ btj = BTJ.getBTJ(token); // Initialize BTJ with Token
 
             // Asynchronous callback
-            for (int index = 0; index < 10; ++index) {
+            for (int index = 0; index < 5; ++index) {
                 getRandomRequest(btj).queue(randomText -> {
                     callsReceived.incrementAndGet();
                     lgr.debug("Callback complete!");
@@ -56,7 +56,7 @@ public class Tester {
 
 
             // Asynchronous future call
-            for (int index = 0; index < 10; ++index) {
+            for (int index = 0; index < 5; ++index) {
                 getRandomRequest(btj).submit().thenAccept(madLib -> {
                     callsReceived.incrementAndGet();
                     lgr.debug("Asynchronous call complete!");
@@ -64,7 +64,7 @@ public class Tester {
             }
 
             // Synchronous call
-            for (int index = 0; index < 10; ++index) {
+            for (int index = 0; index < 5; ++index) {
                 getRandomRequest(btj).complete();
                 callsReceived.incrementAndGet();
                 lgr.debug("Synchronous call complete!");

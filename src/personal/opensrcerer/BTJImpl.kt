@@ -11,10 +11,7 @@ import opensrcerer.requests.BTJRequestBuilder
 import opensrcerer.util.BTJInterceptor
 import org.slf4j.Logger
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ThreadFactory
+import java.util.concurrent.*
 import javax.security.auth.login.LoginException
 import kotlin.collections.ArrayList
 
@@ -52,6 +49,7 @@ internal class BTJImpl : BTJ {
         lgr.debug("Initializing BTJ instance with default settings...")
         client = OkHttpClient().newBuilder()
             .addInterceptor(BTJInterceptor(this, singleScheduledExec))
+            .callTimeout(5000, TimeUnit.SECONDS)
             .build()
         builder = BTJRequestBuilder(token) // Create a new RequestBuilder with given token
         requests = BTJQueue(this, twinExecutor)
@@ -70,6 +68,7 @@ internal class BTJImpl : BTJ {
         lgr.debug("Initializing BTJ instance with custom executor...")
         client = OkHttpClient().newBuilder()
             .addInterceptor(BTJInterceptor(this, singleScheduledExec))
+            .callTimeout(5000, TimeUnit.SECONDS)
             .build()
         builder = BTJRequestBuilder(token) // Create a new RequestBuilder with given token
         requests = BTJQueue(this, executor)
